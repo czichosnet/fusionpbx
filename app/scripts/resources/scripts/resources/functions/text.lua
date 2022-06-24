@@ -24,10 +24,9 @@
 -- default_language, default_dialect = 'ru', 'ru'
 -- var = text['label-attached']
 local function make_text(dict, language, dialect)
-
-	
-	language, dialect = 'de', 'de'
-	
+	if not (language and dialect) then
+		language, dialect = 'en', 'us'
+	end
 
 	if type(dict) == 'string' then
 		dict = require(dict)

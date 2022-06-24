@@ -147,9 +147,6 @@
 					if (debug["sql"]) then
 						freeswitch.consoleLog("notice", "[voicemail] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
 					end
-
-					freeswitch.consoleLog("notice", "[voicemail] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
-					
 					dbh:query(sql, params, function(row)
 						subject = row["template_subject"];
 						body = row["template_body"];
@@ -228,6 +225,7 @@
 
 				--send the email
 					send_mail(headers,
+						nil,
 						voicemail_mail_to,
 						{subject, body},
 						(voicemail_file == "attach") and file
