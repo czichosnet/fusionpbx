@@ -775,8 +775,36 @@
 					case 'mon': //month names
 						<?php
 						for ($m = 1; $m <= 12; $m++) {
-							echo "sel_start.options[sel_start.options.length] = new Option('".date('F', strtotime('2015-'.number_pad($m,2).'-01'))."', ".$m.");\n";
-							echo "sel_stop.options[sel_stop.options.length] = new Option('".date('F', strtotime('2015-'.number_pad($m,2).'-01'))."', ".$m.");\n";
+
+							$Mon = "Januar";
+							if($m == 1){
+								$Mon = "Januar";
+							}elseif($m == 2){
+								$Mon = "Februar";
+							}elseif($m == 3){
+								$Mon = "März";
+							}elseif($m == 4){
+								$Mon = "April";
+							}elseif($m == 5){
+								$Mon = "Mai";
+							}elseif($m == 6){
+								$Mon = "Juni";
+							}elseif($m == 7){
+								$Mon = "Juli";
+							}elseif($m == 7){
+								$Mon = "August";
+							}elseif($m == 7){
+								$Mon = "September";
+							}elseif($m == 7){
+								$Mon = "Oktober";
+							}elseif($m == 7){
+								$Mon = "November";
+							}elseif($m == 7){
+								$Mon = "Dezember";
+							}
+							
+							echo "sel_start.options[sel_start.options.length] = new Option('".$Mon."', ".$m.");\n";
+							echo "sel_stop.options[sel_stop.options.length] = new Option('".$Mon."', ".$m.");\n";
 						}
 						?>
 						break;
@@ -798,8 +826,24 @@
 					case 'wday': //week days
 						<?php
 						for ($d = 1; $d <= 7; $d++) {
-							echo "sel_start.options[sel_start.options.length] = new Option('".date('l', strtotime('Sunday +'.($d-1).' days'))."', ".$d.");\n";
-							echo "sel_stop.options[sel_stop.options.length] = new Option('".date('l', strtotime('Sunday +'.($d-1).' days'))."', ".$d.");\n";
+							$Day = "Montag";
+							if($d == 1){
+								$Day = "Sonntag";
+							}elseif($d == 2){
+								$Day = "Montag";
+							}elseif($d == 3){
+								$Day = "Dienstag";
+							}elseif($d == 4){
+								$Day = "Mittwoch";
+							}elseif($d == 5){
+								$Day = "Donnerstag";
+							}elseif($d == 6){
+								$Day = "Freitag";
+							}elseif($d == 7){
+								$Day = "Samstag";
+							}
+							echo "sel_start.options[sel_start.options.length] = new Option('".$Day."', ".$d.");\n";
+							echo "sel_stop.options[sel_stop.options.length] = new Option('".$Day."', ".$d.");\n";
 						}
 						?>
 						break;
@@ -820,16 +864,20 @@
 
 					case 'hour': //hours of day
 						for (h = 0; h <= 23; h++) {
-							sel_start.options[sel_start.options.length] = new Option(((h != 0) ? ((h >= 12) ? ((h == 12) ? h : (h - 12)) + ' PM' : h + ' AM') : '12 AM'), h);
-							sel_stop.options[sel_stop.options.length] = new Option(((h != 0) ? ((h >= 12) ? ((h == 12) ? h : (h - 12)) + ' PM' : h + ' AM') : '12 AM'), h);
+							sel_start.options[sel_start.options.length] = new Option(("0"+h).slice(-2), h);
+							sel_stop.options[sel_stop.options.length] = new Option(("0"+h).slice(-2), h);
 						}
 						break;
 
 					case 'time-of-day': //time of day
 						for (h = 0; h <= 23; h++) {
 							for (m = 0; m <= 59; m += 1) {
-								sel_start.options[sel_start.options.length] = new Option(((h != 0) ? ((h >= 12) ? ((h == 12) ? h : (h - 12)) + ':' + pad(m, 2) + ' PM' : h + ':' + pad(m, 2) + ' AM') : '12:' + pad(m, 2) + ' AM'), pad(h, 2) + ':' + pad(m, 2));
-								sel_stop.options[sel_stop.options.length] = new Option(((h != 0) ? ((h >= 12) ? ((h == 12) ? h : (h - 12)) + ':' + pad(m, 2) + ' PM' : h + ':' + pad(m, 2) + ' AM') : '12:' + pad(m, 2) + ' AM'), pad(h, 2)  + ':' + pad(m, 2));
+								
+								sel_start.options[sel_start.options.length] = new Option(("0"+h).slice(-2)+":"+("0"+m).slice(-2),pad(h, 2)  + ':' + pad(m, 2));
+								sel_stop.options[sel_stop.options.length] =new Option(("0"+h).slice(-2)+":"+("0"+m).slice(-2),pad(h, 2)  + ':' + pad(m, 2));
+
+								//sel_start.options[sel_start.options.length] = new Option(((h != 0) ? ((h >= 12) ? ((h == 12) ? h : (h - 12)) + ':' + pad(m, 2) + ' PM' : h + ':' + pad(m, 2) + ' AM') : '12:' + pad(m, 2) + ' AM'), pad(h, 2) + ':' + pad(m, 2));
+								//sel_stop.options[sel_stop.options.length] = new Option(((h != 0) ? ((h >= 12) ? ((h == 12) ? h : (h - 12)) + ':' + pad(m, 2) + ' PM' : h + ':' + pad(m, 2) + ' AM') : '12:' + pad(m, 2) + ' AM'), pad(h, 2)  + ':' + pad(m, 2));
 							}
 						}
 						//h = 23;

@@ -162,9 +162,6 @@
 		$y++;
 		$apps[$x]['permissions'][$y]['name'] = "emergency_caller_id_select";
 		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "emergency_caller_id_select_empty";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$y++;
 		$apps[$x]['permissions'][$y]['name'] = "extension_user_record";
 		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
 		$y++;
@@ -209,29 +206,26 @@
 		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
 		$apps[$x]['permissions'][$y]['groups'][] = "admin";
 		$apps[$x]['permissions'][$y]['groups'][] = "user";
-		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "extension_directory";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$apps[$x]['permissions'][$y]['groups'][] = "admin";
-		$apps[$x]['permissions'][$y]['groups'][] = "user";
-		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "extension_max_registrations";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "extension_limit";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$apps[$x]['permissions'][$y]['groups'][] = "admin";
-		$apps[$x]['permissions'][$y]['groups'][] = "user";
-		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "extension_call_group";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$apps[$x]['permissions'][$y]['groups'][] = "admin";
-		$apps[$x]['permissions'][$y]['groups'][] = "user";
-		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "extension_hold_music";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$apps[$x]['permissions'][$y]['groups'][] = "admin";
-		$apps[$x]['permissions'][$y]['groups'][] = "user"; 
+                $y++;
+                $apps[$x]['permissions'][$y]['name'] = "extension_directory";
+                $apps[$x]['permissions'][$y]['groups'][] = "superadmin";
+                $apps[$x]['permissions'][$y]['groups'][] = "admin";
+                $apps[$x]['permissions'][$y]['groups'][] = "user";
+                $y++;
+                $apps[$x]['permissions'][$y]['name'] = "extension_limit";
+                $apps[$x]['permissions'][$y]['groups'][] = "superadmin";
+                $apps[$x]['permissions'][$y]['groups'][] = "admin";
+                $apps[$x]['permissions'][$y]['groups'][] = "user";
+                $y++;
+                $apps[$x]['permissions'][$y]['name'] = "extension_call_group";
+                $apps[$x]['permissions'][$y]['groups'][] = "superadmin";
+                $apps[$x]['permissions'][$y]['groups'][] = "admin";
+                $apps[$x]['permissions'][$y]['groups'][] = "user";
+                $y++;
+                $apps[$x]['permissions'][$y]['name'] = "extension_hold_music";
+                $apps[$x]['permissions'][$y]['groups'][] = "superadmin";
+                $apps[$x]['permissions'][$y]['groups'][] = "admin";
+                $apps[$x]['permissions'][$y]['groups'][] = "user"; 
 
 
 	//default settings
@@ -317,7 +311,7 @@
 		$apps[$x]['default_settings'][$y]['default_setting_description'] = "Default value to set whether to record inbound, outbound, or all calls.";
 
 	//cache details
-		$apps[$x]['cache']['key'] = "directory.\${extension}@\${domain_name}";
+		$apps[$x]['cache']['key'] = "directory.\${extension}@\${user_context}";
 
 	//schema details
 		$y=0;
@@ -438,10 +432,6 @@
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = "directory_exten_visible";
-		$apps[$x]['db'][$y]['fields'][$z]['type'] = "text";
-		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
-		$z++;
-		$apps[$x]['db'][$y]['fields'][$z]['name'] = "max_registrations";
 		$apps[$x]['db'][$y]['fields'][$z]['type'] = "text";
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 		$z++;

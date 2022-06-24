@@ -16,7 +16,7 @@
 --
 --	The Initial Developer of the Original Code is
 --	Mark J Crane <markjcrane@fusionpbx.com>
---	Copyright (C) 2015-2022
+--	Copyright (C) 2015-2019
 --	the Initial Developer. All Rights Reserved.
 --
 --	Contributor(s):
@@ -41,15 +41,14 @@
 		json = require "resources.functions.lunajson"
 	end
 
---additional includes
+--define the explode function
 	require "resources.functions.explode";
-	require "resources.functions.count";
-	require "resources.functions.send_mail";
 
---check if windows
+--array count
+	require "resources.functions.count";
+
 	local IS_WINDOWS = (package.config:sub(1,1) == '\\')
 
---define function quote
 	local function quote(s)
 		local q = IS_WINDOWS and '"' or "'"
 		if s:find('%s') or s:find(q, nil, true) then
@@ -58,13 +57,13 @@
 		return s
 	end
 
---escape shell arguments to prevent command injection
-	local function shell_esc(x)
-		return (x:gsub('\\', '\\\\')
-			:gsub('\'', '\\\''))
-	end
+-- escape shell arguments to prevent command injection
+        local function shell_esc(x)
+                return (x:gsub('\\', '\\\\')
+                       :gsub('\'', '\\\''))
+        end
 
---set channel variables to lua variables
+-- set channel variables to lua variables
 	domain_uuid = env:getHeader("domain_uuid");
 	domain_name = env:getHeader("domain_name");
 
@@ -98,11 +97,11 @@
 		end
 	end
 
---show all channel variables
+-- show all channel variables
 	serialized = env:serialize()
 	freeswitch.consoleLog("INFO","[fax]\n" .. serialized .. "\n")
 
---example channel variables relating to fax
+-- example channel variables relating to fax
 	--variable_fax_success: 0
 	--variable_fax_result_code: 49
 	--variable_fax_result_text: The%20call%20dropped%20prematurely
@@ -115,10 +114,9 @@
 	--variable_fax_bad_rows: 0
 	--variable_fax_transfer_rate: 14400
 
---set channel variables to lua variables
-	uuid = env:getHeader("uuid");
+-- set channel variables to lua variables
 	fax_uuid = env:getHeader("fax_uuid");
-	fax_queue_uuid = env:getHeader("fax_queue_uuid");
+	uuid = env:getHeader("uuid");
 	fax_success = env:getHeader("fax_success");
 	fax_result_text = env:getHeader("fax_result_text");
 	fax_local_station_id = env:getHeader("fax_local_station_id");
@@ -137,7 +135,7 @@
 	hangup_cause_q850 = tonumber(env:getHeader("hangup_cause_q850"));
 	fax_file = env:getHeader("fax_file");
 
---prevent nil errors
+-- prevent nil errors
 	if (fax_file == nil) then
 		fax_file = env:getHeader("fax_filename");
 	end
@@ -152,9 +150,6 @@
 	end
 	if (caller_id_number == nil) then
 		caller_id_number = env:getHeader("Caller-Caller-ID-Number");
-	end
-	if (document_root == nil) then
-		document_root = '';
 	end
 
 --set default values
@@ -210,7 +205,7 @@
 	end
 
 --fax to email
-	cmd = "lua" .. " " .. quote(scripts_dir .. "/fax_to_email.lua") .. " ";
+	-- cmd = "lua" .. " " .. quote(scripts_dir .. "/fax_to_email.lua") .. " ";
 	cmd = quote(shell_esc(php_dir).."/"..shell_esc(php_bin)).." "..quote(shell_esc(document_root).."/secure/fax_to_email.php").." ";
 	cmd = cmd .. "email="..quote(shell_esc(fax_email)).." ";
 	cmd = cmd .. "extension="..quote(shell_esc(fax_extension)).." ";
@@ -230,9 +225,7 @@
 		cmd = cmd .. "fax_prefix=false ";
 	end
 	freeswitch.consoleLog("notice", "[fax] command: " .. cmd .. "\n");
-	local handle = io.popen(cmd);
-	result = handle:read("*a");
-	handle:close();
+	result = api:execute("system", cmd);
 
 --add to fax logs
 	sql = "insert into v_fax_logs ";
@@ -422,7 +415,7 @@
 		end
 	end
 
---send the selected variables to the console
+-- send the selected variables to the console
 	if (fax_success ~= nil) then
 		freeswitch.consoleLog("INFO","fax_success: '" .. fax_success .. "'\n");
 	end

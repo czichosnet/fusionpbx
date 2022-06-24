@@ -517,7 +517,7 @@
 			$database = new database;
 			$database->app_name = 'email_templates';
 			$database->app_uuid = '8173e738-2523-46d5-8943-13883befd2fd';
-			$database->save($array, false);
+			$database->save($array);
 			//$message = $database->message;
 
 			//remove the temporary permission

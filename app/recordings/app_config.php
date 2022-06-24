@@ -32,7 +32,7 @@
 	//destination details
 		$y=0;
 		$apps[$x]['destinations'][$y]['type'] = "sql";
-		$apps[$x]['destinations'][$y]['label'] = "recordings";
+		$apps[$x]['destinations'][$y]['label'] = "original";
 		$apps[$x]['destinations'][$y]['name'] = "recordings";
 		$apps[$x]['destinations'][$y]['sql'] = "select recording_uuid as uuid, recording_name as name, recording_filename as destination, recording_description as description from v_recordings";
 		$apps[$x]['destinations'][$y]['where'] = "where domain_uuid = '\${domain_uuid}' ";
@@ -62,9 +62,6 @@
 		$y++;
 		$apps[$x]['permissions'][$y]['name'] = "recording_delete";
 		$apps[$x]['permissions'][$y]['groups'][] = "admin";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "recording_all";
 		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
 		$y++;
 		$apps[$x]['permissions'][$y]['name'] = "recording_upload";

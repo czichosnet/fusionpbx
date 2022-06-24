@@ -181,13 +181,13 @@
 			$tmp_month = date("M", $row['start_epoch']);
 			$tmp_day = date("d", $row['start_epoch']);
 
-			if (defined('TIME_24HR') && TIME_24HR == 1) {
-				$start_date = date("j M Y H:i:s", $row['start_epoch']);
-				$end_date = date("j M Y H:i:s", $row['end_epoch']);
-			} else {
-				$start_date = date("j M Y h:i:sa", $row['start_epoch']);
-				$end_date = date("j M Y h:i:sa", $row['end_epoch']);
-			}
+			//if (defined('TIME_24HR') && TIME_24HR == 1) {
+			$start_date = date("j M Y H:i:s", $row['start_epoch']);
+			$end_date = date("j M Y H:i:s", $row['end_epoch']);
+			//} else {
+			//	$start_date = date("j M Y h:i:sa", $row['start_epoch']);
+			//	$end_date = date("j M Y h:i:sa", $row['end_epoch']);
+			//}
 			$time_difference = '';
 			if (strlen($row['end_epoch']) > 0) {
 				$time_difference = $row['end_epoch'] - $row['start_epoch'];

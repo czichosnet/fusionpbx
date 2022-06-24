@@ -288,11 +288,13 @@
 				foreach ($field['messages'] as $row) {
 					//responsive date
 					$array = explode(' ', $row['created_date']);
+					$time = strtotime($row['created_date']);
+					$newFormat = date("d.m.Y H:i",$time);
 					if ($array[0].' '.$array[1].' '.$array[2] == date('j M Y')) { //today
-						$created_date = escape($array[3].' '.$array[4]); //only show time
+						$created_date = escape($newFormat) ;// escape($array[3].' '.$array[4]); //only show time
 					}
 					else {
-						$created_date = escape($array[0].' '.$array[1].' '.$array[2])." <span class='hide-xs' title=\"".escape($array[3].' '.$array[4])."\">".escape($array[3].' '.$array[4])."</span>";
+						$created_date = escape($newFormat) ;//$created_date = escape($array[0].' '.$array[1].' '.$array[2])." <span class='hide-xs' title=\"".escape($array[3].' '.$array[4])."\">".escape($array[3].' '.$array[4])."</span>";
 					}
 
 					//playback progress bar

@@ -179,21 +179,6 @@
 		$apps[$x]['permissions'][$y]['name'] = "fax_extension_view_domain";
 		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
 		$apps[$x]['permissions'][$y]['groups'][] = "admin";
-		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "fax_subject";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$apps[$x]['permissions'][$y]['groups'][] = "admin";
-		$apps[$x]['permissions'][$y]['groups'][] = "user";
-		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "fax_message";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$apps[$x]['permissions'][$y]['groups'][] = "admin";
-		$apps[$x]['permissions'][$y]['groups'][] = "user";
-		$y++;
-		$apps[$x]['permissions'][$y]['name'] = "fax_footer";
-		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
-		$apps[$x]['permissions'][$y]['groups'][] = "admin";
-		$apps[$x]['permissions'][$y]['groups'][] = "user";
 
 	//default settings
 		$y=0;
@@ -225,8 +210,8 @@
 		$apps[$x]['default_settings'][$y]['default_setting_category'] = "fax";
 		$apps[$x]['default_settings'][$y]['default_setting_subcategory'] = "cover_logo";
 		$apps[$x]['default_settings'][$y]['default_setting_name'] = "text";
-		$apps[$x]['default_settings'][$y]['default_setting_value'] = "";
-		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = "false";
+		$apps[$x]['default_settings'][$y]['default_setting_value'] = "/var/www/fusionpbx/app/fax/resources/images/logo.jpg";
+		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = "true";
 		$apps[$x]['default_settings'][$y]['default_setting_description'] = "Path to image/logo file displayed in the header of the cover sheet.";
 		$y++;
 		$apps[$x]['default_settings'][$y]['default_setting_uuid'] = "6aba55ae-ced9-4853-81d0-33667be763e5";
@@ -284,22 +269,6 @@
 		$apps[$x]['default_settings'][$y]['default_setting_value'] = "fax_enable_t38_request=false";
 		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = "true";
 		$apps[$x]['default_settings'][$y]['default_setting_description'] = "Send a T38 reinvite when a fax tone is detected.";
-		$y++;
-		$apps[$x]['default_settings'][$y]['default_setting_uuid'] = "dce47447-5a52-4b32-ad6f-39cf698dfb72";
-		$apps[$x]['default_settings'][$y]['default_setting_category'] = "fax";
-		$apps[$x]['default_settings'][$y]['default_setting_subcategory'] = "variable";
-		$apps[$x]['default_settings'][$y]['default_setting_name'] = "array";
-		$apps[$x]['default_settings'][$y]['default_setting_value'] = "t38_passthru=false";
-		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = "false";
-		$apps[$x]['default_settings'][$y]['default_setting_description'] = "Send a T38 passthru.";
-		$y++;
-		$apps[$x]['default_settings'][$y]['default_setting_uuid'] = "3be4d0f0-d47d-45e8-9394-90b147793806";
-		$apps[$x]['default_settings'][$y]['default_setting_category'] = "fax";
-		$apps[$x]['default_settings'][$y]['default_setting_subcategory'] = "variable";
-		$apps[$x]['default_settings'][$y]['default_setting_name'] = "array";
-		$apps[$x]['default_settings'][$y]['default_setting_value'] = "fax_use_ecm=false";
-		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = "false";
-		$apps[$x]['default_settings'][$y]['default_setting_description'] = "Use error correction mode.";
 		$y++;
 		$apps[$x]['default_settings'][$y]['default_setting_uuid'] = "7681e5d8-1462-420b-9276-acf4b2156982";
 		$apps[$x]['default_settings'][$y]['default_setting_category'] = "fax";
@@ -386,7 +355,7 @@
 		$apps[$x]['default_settings'][$y]['default_setting_subcategory'] = "smtp_from";
 		$apps[$x]['default_settings'][$y]['default_setting_name'] = "text";
 		$apps[$x]['default_settings'][$y]['default_setting_value'] = "";
-		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = "false";
+		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = "true";
 		$apps[$x]['default_settings'][$y]['default_setting_description'] = "";
 		$y++;
 		$apps[$x]['default_settings'][$y]['default_setting_uuid'] = "03c6ea15-a0b8-4164-9026-47595981477b";
@@ -394,7 +363,7 @@
 		$apps[$x]['default_settings'][$y]['default_setting_subcategory'] = "smtp_from_name";
 		$apps[$x]['default_settings'][$y]['default_setting_name'] = "text";
 		$apps[$x]['default_settings'][$y]['default_setting_value'] = "";
-		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = "false";
+		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = "true";
 		$apps[$x]['default_settings'][$y]['default_setting_description'] = "";
 
 	//schema details
@@ -657,7 +626,7 @@
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = "fax_date";
-		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = "timestamptz";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = "timestamp";
 		$apps[$x]['db'][$y]['fields'][$z]['type']['sqlite'] = "date";
 		$apps[$x]['db'][$y]['fields'][$z]['type']['mysql'] = "timestamp";
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
@@ -765,7 +734,7 @@
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = "fax_date";
-		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = "timestamptz";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = "timestamp";
 		$apps[$x]['db'][$y]['fields'][$z]['type']['sqlite'] = "date";
 		$apps[$x]['db'][$y]['fields'][$z]['type']['mysql'] = "timestamp";
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
@@ -795,15 +764,11 @@
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "FAX server primary key";
 		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = "task_next_time";
-		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = "timestamptz";
-		$apps[$x]['db'][$y]['fields'][$z]['type']['sqlite'] = "date";
-		$apps[$x]['db'][$y]['fields'][$z]['type']['mysql'] = "timestamp";
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = "timestamp";
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = "task_lock_time";
-		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = "timestamptz";
-		$apps[$x]['db'][$y]['fields'][$z]['type']['sqlite'] = "date";
-		$apps[$x]['db'][$y]['fields'][$z]['type']['mysql'] = "timestamp";
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = "timestamp";
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = "task_fax_file";

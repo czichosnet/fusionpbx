@@ -272,28 +272,6 @@
 		$extensions = $database->select($sql, $parameters);
 	}
 
-//get the ivr's
-if (permission_exists('call_block_all') || permission_exists('call_block_ivr')) {
-	$sql = "select ivr_menu_uuid,ivr_menu_name, ivr_menu_extension, ivr_menu_description from v_ivr_menus ";
-	$sql .= "where domain_uuid = :domain_uuid ";
-	// $sql .= "and enabled = 'true' ";
-	$sql .= "order by ivr_menu_extension asc ";
-	$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
-	$database = new database;
-	$ivrs = $database->select($sql, $parameters);
-}
-
-//get the ring groups
-if (permission_exists('call_block_all') || permission_exists('call_block_ring_group')) {
-	$sql = "select ring_group_uuid,ring_group_name, ring_group_extension, ring_group_description from v_ring_groups ";
-	$sql .= "where domain_uuid = :domain_uuid ";
-	// $sql .= "and ring_group_enabled = 'true' ";
-	$sql .= "order by ring_group_extension asc ";
-	$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
-	$database = new database;
-	$ring_groups = $database->select($sql, $parameters);
-}
-
 //get the voicemails
 	$sql = "select voicemail_uuid, voicemail_id, voicemail_description ";
 	$sql .= "from v_voicemails ";
@@ -416,7 +394,7 @@ if (permission_exists('call_block_all') || permission_exists('call_block_ring_gr
 	echo "</td>\n";
 	echo "<td class='vtable' align='left'>\n";
 	function call_block_action_select($label = false) {
-		global $select_margin, $text, $call_block_app, $call_block_data, $extensions, $ivrs, $voicemails, $ring_groups;
+		global $select_margin, $text, $call_block_app, $call_block_data, $extensions, $voicemails;
 		echo "<select class='formfld' style='".$select_margin."' name='call_block_action'>\n";
 		if ($label) {
 			echo "	<option value='' disabled='disabled'>".$text['label-action']."</option>\n";
@@ -445,26 +423,6 @@ if (permission_exists('call_block_all') || permission_exists('call_block_ring_gr
 				foreach ($extensions as &$row) {
 					$selected = ($call_block_app == 'extension' && $call_block_data == $row['extension']) ? "selected='selected'" : null;
 					echo "		<option value='extension:".urlencode($row["extension"])."' ".$selected.">".escape($row['extension'])." ".escape($row['description'])."</option>\n";
-				}
-				echo "	</optgroup>\n";
-			}
-		}
-		if (permission_exists('call_block_ivr')) {
-			if (is_array($ivrs) && sizeof($ivrs) != 0) {
-				echo "	<optgroup label='".$text['label-ivr_menus']."'>\n";
-				foreach ($ivrs as &$row) {
-					$selected = ($call_block_app == 'ivr' && $call_block_data == $row['ivr_menu_extension']) ? "selected='selected'" : null;
-					echo "		<option value='ivr:".urlencode($row["ivr_menu_extension"])."' ".$selected.">".escape($row['ivr_menu_name'])." ".escape($row['ivr_menu_extension'])."</option>\n";
-				}
-				echo "	</optgroup>\n";
-			}
-		}
-		if (permission_exists('call_block_ring_group')) {
-			if (is_array($ring_groups) && sizeof($ring_groups) != 0) {
-				echo "	<optgroup label='".$text['label-ring_groups']."'>\n";
-				foreach ($ring_groups as &$row) {
-					$selected = ($call_block_app == 'ring_group' && $call_block_data == $row['ring_group_extension']) ? "selected='selected'" : null;
-					echo "		<option value='ring_group:".urlencode($row["ring_group_extension"])."' ".$selected.">".escape($row['ring_group_name'])." ".escape($row['ring_group_extension'])."</option>\n";
 				}
 				echo "	</optgroup>\n";
 			}
@@ -618,12 +576,12 @@ if (permission_exists('call_block_all') || permission_exists('call_block_ring_gr
 						$list_row_onclick_uncheck = "if (!this.checked) { document.getElementById('checkbox_all_".$direction."').checked = false; }";
 						$list_row_onclick_toggle = "onclick=\"document.getElementById('checkbox_".$x."').checked = document.getElementById('checkbox_".$x."').checked ? false : true; ".$list_row_onclick_uncheck."\"";
 						if (strlen($row['caller_id_number']) >= 7) {
-							if ($_SESSION['domain']['time_format']['text'] == '24h') {
+							//if ($_SESSION['domain']['time_format']['text'] == '24h') {
 								$tmp_start_epoch = date('j M Y', $row['start_epoch'])." <span class='hide-sm-dn'>".date('H:i:s', $row['start_epoch']).'</span>';
-							}
-							else {
-								$tmp_start_epoch = date('j M Y', $row['start_epoch'])." <span class='hide-sm-dn'>".date('h:i:s a', $row['start_epoch']).'</span>';
-							}
+							//}
+							//else {
+							//	$tmp_start_epoch = date('j M Y', $row['start_epoch'])." <span class='hide-sm-dn'>".date('h:i:s a', $row['start_epoch']).'</span>';
+							//}
 							echo "<tr class='list-row row_".$row['direction']."' href='".$list_row_url."'>\n";
 							echo "	<td class='checkbox'>\n";
 							echo "		<input type='checkbox' class='checkbox_".$row['direction']."' name='xml_cdrs[$x][checked]' id='checkbox_".$x."' value='true' onclick=\"".$list_row_onclick_uncheck."\">\n";
