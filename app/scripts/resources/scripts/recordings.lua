@@ -91,11 +91,11 @@
 	function begin_record(session, sounds_dir, recordings_dir)
 
 		--set the sounds path for the language, dialect and voice
-			default_language = session:getVariable("default_language");
-			default_dialect = session:getVariable("default_dialect");
-			default_voice = session:getVariable("default_voice");
-			if (not default_language) then default_language = 'en'; end
-			if (not default_dialect) then default_dialect = 'us'; end
+			default_language = "de";
+			default_dialect = "de"
+			default_voice = "callie"
+			if (not default_language) then default_language = 'de'; end
+			if (not default_dialect) then default_dialect = 'de'; end
 			if (not default_voice) then default_voice = 'callie'; end
 			recording_id = session:getVariable("recording_id");
 			recording_prefix = session:getVariable("recording_prefix");
@@ -115,7 +115,6 @@
 				max_digits = 20;
 				session:sleep(1000);
 				recording_id = session:playAndGetDigits(min_digits, max_digits, max_tries, digit_timeout, "#", sounds_dir.."/"..default_language.."/"..default_dialect.."/"..default_voice.."/ivr/ivr-id_number.wav", "", "\\d+");
-				session:setVariable("recording_id", recording_id);
 				recording_name = recording_prefix..recording_id.."."..record_ext;
 			elseif (tonumber(recording_id) ~= nil) then
 				recording_name = recording_prefix..recording_id.."."..record_ext;
@@ -298,12 +297,12 @@ if (session:ready()) then
 		if (storage_path ~= nil and string.len(storage_path) > 0) then recordings_dir = storage_path; end
 
 	--set the sounds path for the language, dialect and voice
-		default_language = session:getVariable("default_language");
-		default_dialect = session:getVariable("default_dialect");
-		default_voice = session:getVariable("default_voice");
-		if (not default_language) then default_language = 'en'; end
-		if (not default_dialect) then default_dialect = 'us'; end
-		if (not default_voice) then default_voice = 'callie'; end
+			default_language = "de";
+			default_dialect = "de"
+			default_voice = "callie"
+			if (not default_language) then default_language = 'de'; end
+			if (not default_dialect) then default_dialect = 'de'; end
+			if (not default_voice) then default_voice = 'callie'; end
 
 	--if the pin number is provided then require it
 		if (pin_number) then

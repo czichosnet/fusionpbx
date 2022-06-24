@@ -30,6 +30,10 @@
 	fax_busy_limit = 5;
 	api = freeswitch.API();
 
+--inclute report generation
+
+	generate_report = require "resources.functions.generate_report";	
+
 --include config.lua
 	require "resources.functions.config";
 
@@ -45,6 +49,8 @@
 
 --additional includes
 	require "resources.functions.explode";
+
+--array count
 	require "resources.functions.count";
 	require "resources.functions.send_mail";
 
@@ -89,15 +95,18 @@
 	fax_result_code = env:getHeader("fax_result_code");
 	fax_busy_attempts = tonumber(env:getHeader("fax_busy_attempts"));
 	hangup_cause_q850 = tonumber(env:getHeader("hangup_cause_q850"));
+	answer_stamp = env:getHeader("start_stamp");
+	billmsec = env:getHeader("billmsec");
 	fax_document_transferred_pages = env:getHeader("fax_document_transferred_pages");
 	fax_document_total_pages = env:getHeader("fax_document_total_pages");
+	callee_id_number = env:getHeader("destination_number");
 	fax_image_resolution = env:getHeader("fax_image_resolution");
 	fax_duration = env:getHeader("billsec");
 	
 
 --set default values
-	default_language = 'en';
-	default_dialect = 'us';
+	default_language = 'de';
+	default_dialect = 'de';
 	if (not origination_caller_id_name) then
 		origination_caller_id_name = '000000000000000';
 	end
@@ -157,10 +166,10 @@
 		ignore_early_media = "false";
 		if (settings['fax']['variable'] ~= nil) then
 			for i, var in ipairs(settings.fax.variable) do
-				--freeswitch.consoleLog("notice", "variable #" .. i .. ": " .. var .. "\n");
-				if (var == "ignore_early_media=true") then
-					ignore_early_media = "true";
-				end
+		  		--freeswitch.consoleLog("notice", "variable #" .. i .. ": " .. var .. "\n");
+		  		if (var == "ignore_early_media=true") then
+		  			ignore_early_media = "true";
+		  		end
 			end
 		end
 	end
@@ -299,6 +308,7 @@
 		fax_time                       = os.time();
 	};
 
+
 	if (debug["sql"]) then
 		freeswitch.consoleLog("notice", "[FAX] retry: " .. sql .. "; params:" .. json.encode(params) .. "\n");
 	end
@@ -325,8 +335,8 @@
 		end
 	end
 	--do not use apostrophies in message, they are not escaped and the mail will fail.
-
---get the from address
+		
+	--get the from address
 	if (from_address == nil) then
 		if (settings['fax'] ~= nil) then
 			if (settings['fax']['smtp_from'] ~= nil) then
@@ -346,7 +356,7 @@
 		end
 	end
 
---get the templates
+	--get the templates
 	local sql = "SELECT * FROM v_email_templates ";
 	sql = sql .. "WHERE (domain_uuid = :domain_uuid or domain_uuid is null) ";
 	sql = sql .. "AND template_language = :template_language ";
@@ -363,7 +373,7 @@
 		freeswitch.consoleLog("notice", "[fax] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
 	end
 
---function to format time in templates
+	--function to format time in templates
 	function format_time(seconds)
 		local seconds = tonumber(seconds)
 		
@@ -589,14 +599,17 @@
 	
 --set the type
 	email_type = "email2fax";
+	x_headers = 'X-Headers: {"X-FusionPBX-Email-Type":"'..email_type..'",';
+	x_headers = x_headers..'"X-FusionPBX-Domain-UUID":"'..domain_uuid..'"}';	
 
+-- if the fax failed then try again
 --prepare the headers
 	headers = {}
 	headers["X-FusionPBX-Domain-UUID"] = domain_uuid;
 	headers["X-FusionPBX-Domain-Name"] = domain_name;
 	headers["X-FusionPBX-Email-Type"]  = email_type;
 	headers["X-FusionPBX-Email-From"]  = from_address;
-	headers["X-FusionPBX-Call-UUID"] = uuid;
+	headers["X-FusionPBX-Call-UUID"] = uuid;	
 
 --if the fax failed then try again
 	if (fax_success == "0") then
@@ -672,10 +685,35 @@
 
 			--bad number
 			elseif (fax_retry_attempts == 10) then
+
+				--local calledNumber = mysplit(fax_uri,"/")[-1]
 				freeswitch.consoleLog("INFO","[FAX] RETRY FAILED: BAD NUMBER\n");
 				freeswitch.consoleLog("INFO", "[FAX] RETRY_STATS FAILURE BAD NUMBER: GATEWAY[".. fax_uri .."]");
 
 				email_address = email_address:gsub("\\,", ",");
+
+				report_path = fax_file:gsub(".tif",".pdf"):gsub("temp/","REPORT-")
+				generate_report(
+								{
+								variable_fax_result_text="UNGÜLTIGE NUMMER",
+								variable_answer_stamp=answer_stamp,
+								variable_billmsec=billmsec,
+								variable_fax_document_transferred_pages=fax_document_transferred_pages ,
+								caller_orig_caller_id_number=origination_caller_id_number,
+								caller_destination_number=number_dialed
+								},
+								{
+									totalPages = fax_document_total_pages ,
+									faxPath = fax_file:gsub(".tif",".pdf")
+								},
+								300,
+								report_path)
+				freeswitch.email(email_address,
+									email_address,
+									"To: "..email_address.."\nFrom: "..from_address.."\nSubject: "..email_subject_fail_invalid.."\n"..x_headers,
+									email_body_fail_invalid,
+									report_path
+								);
 
 			--busy number
 			elseif (fax_retry_attempts == 17) then
@@ -684,13 +722,29 @@
 
 				email_address = email_address:gsub("\\,", ",");
 
-				--send the email
-				send_mail(headers,
-					from_address,
-					email_address,
-					{email_subject_fail_busy, email_body_fail_busy},
-					fax_file
-				);
+				report_path = fax_file:gsub(".tif",".pdf"):gsub("temp/","REPORT-")
+				generate_report(
+								{
+								variable_fax_result_text="FAX BESETZT",
+								variable_answer_stamp=answer_stamp,
+								variable_billmsec=billmsec,
+								variable_fax_document_transferred_pages=fax_document_transferred_pages ,
+								caller_orig_caller_id_number=origination_caller_id_number,
+								caller_destination_number=number_dialed
+								},
+								{
+									totalPages = fax_document_total_pages,
+									faxPath = fax_file:gsub(".tif",".pdf")
+								},
+								300,
+								report_path)
+									--send the email
+					send_mail(headers,
+								from_address,
+								email_address,
+								{email_subject_fail_busy, email_body_fail_busy},
+								report_path
+							);
 
 			else
 				--the fax failed completely. send a message
@@ -698,14 +752,30 @@
 				freeswitch.consoleLog("INFO", "[FAX] RETRY STATS FAILURE: GATEWAY[".. fax_uri .."], tried 5 combinations without success");
 
 				email_address = email_address:gsub("\\,", ",");
-
-				--send the email
-				send_mail(headers,
-					from_address,
-					email_address,
-					{email_subject_fail_default, email_body_fail_default},
-					fax_file
-				);
+				
+				report_path = fax_file:gsub(".tif",".pdf"):gsub("temp/","REPORT-")
+				generate_report(
+								{
+								variable_fax_result_text=fax_result_text,
+								variable_answer_stamp=answer_stamp,
+								variable_billmsec=billmsec,
+								variable_fax_document_transferred_pages=fax_document_transferred_pages ,
+								caller_orig_caller_id_number=origination_caller_id_number,
+								caller_destination_number=number_dialed
+								},
+								{
+									totalPages = fax_document_total_pages ,
+									faxPath = fax_file:gsub(".tif",".pdf")
+								},
+								300,
+								report_path)
+								--send the email
+								send_mail(headers,
+								from_address,
+								email_address,
+								{email_subject_fail_default, email_body_fail_default},
+								report_path
+							);
 
 				fax_retry_attempts = fax_retry_attempts + 1;
 
@@ -748,13 +818,32 @@
 		freeswitch.consoleLog("INFO", "[FAX] RETRY STATS SUCCESS: GATEWAY[".. fax_uri .."] VARS[" .. fax_trial .. "]");
 		email_address = email_address:gsub("\\,", ",");
 
-		--send the email
-		send_mail(headers,
-			from_address,
-			email_address,
-			{email_subject_success_default, email_body_success_default},
-			fax_file:gsub(".tif",".pdf")
-		);
+		report_path = fax_file:gsub(".tif",".pdf"):gsub("temp/","REPORT-")
+		generate_report(
+								{
+								variable_fax_result_text=fax_result_text,
+								variable_answer_stamp=answer_stamp,
+								variable_billmsec=billmsec,
+								variable_fax_document_transferred_pages=fax_document_transferred_pages,
+								caller_orig_caller_id_number=origination_caller_id_number,
+								caller_destination_number=sip_to_user
+								},
+								{
+									totalPages = fax_document_total_pages,
+									faxPath = fax_file:gsub(".tif",".pdf")
+								},
+								300,
+								report_path)
+								--send the email
+								send_mail(headers,
+								from_address,
+								email_address,
+								{email_subject_success_default, email_body_success_default},
+								report_path
+							);
+			);
+
+			
 
 		if (settings['fax']['keep_local']['boolean'] ~= "nil") then
 			if (settings['fax']['keep_local']['boolean'] == "false") then
