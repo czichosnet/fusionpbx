@@ -1,1 +1,0 @@
-require "app.voicemail.resources.functions.send_email";

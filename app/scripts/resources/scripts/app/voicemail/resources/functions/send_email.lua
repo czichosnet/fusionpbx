@@ -81,7 +81,7 @@
 					end
 
 				--get voicemail message details
-					local sql = [[SELECT to_char(timezone(:time_zone, to_timestamp(created_epoch)), 'DD.MM.YYYY HH24:MI:SS' ) as message_date, * 
+					local sql = [[SELECT to_char(timezone(:time_zone, to_timestamp(created_epoch)), 'Day DD Mon YYYY HH:MI:SS PM') as message_date, * 
 						FROM v_voicemail_messages
 						WHERE domain_uuid = :domain_uuid
 						AND voicemail_message_uuid = :uuid]]
@@ -147,6 +147,9 @@
 					if (debug["sql"]) then
 						freeswitch.consoleLog("notice", "[voicemail] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
 					end
+
+					freeswitch.consoleLog("notice", "[voicemail] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
+					
 					dbh:query(sql, params, function(row)
 						subject = row["template_subject"];
 						body = row["template_body"];
@@ -198,7 +201,6 @@
 						body = body:gsub("${message_text}", transcription);
 					end
 					body = body:gsub("${message_duration}", message_length_formatted);
-					body = body:gsub("${caller_destination}", "+"..session:getVariable("caller_destination"));
 					body = body:gsub("${account}", voicemail_name_formatted);
 					body = body:gsub("${voicemail_id}", id);
 					body = body:gsub("${voicemail_description}", voicemail_description);
@@ -262,6 +264,5 @@
 				end
 
 			end
-			--freeswitch.consoleLog("Info",env:getHeader("caller_destination"))
-			--freeswitch.consoleLog("Info",)
+
 	end

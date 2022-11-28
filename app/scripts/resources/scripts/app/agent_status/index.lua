@@ -11,7 +11,6 @@
 --connect to the database
 	local Database = require "resources.functions.database";
 	dbh = Database.new('system');
-	sqlite3dbh = freeswitch.Dbh("sqlite://callcenterLogs")
 
 --include json library
 	local json
@@ -140,20 +139,6 @@
 			freeswitch.consoleLog("notice", "[user status][login] "..cmd.."\n");
 			result = api:executeString(cmd);
 
-		-- Record the status Change
-
-			local epoch = os.time()
-
-			local dateTime = os.date("%c")
-		
-			local sqlString = "INSERT INTO statusChanges (agent_id,epoch,dateTime,action,agentName) VALUES( '".. agent_id.."', '"..epoch.."' , '"..dateTime.."', '"..action.."', '"..session:getVariable("effective_caller_id_name").."')";
-
-			freeswitch.consoleLog("notice", sqlString);
-
-			sqlite3dbh:query(sqlString, function(row)
-
-			end)
-
 		--update the user status
 			if (user_uuid ~= nil and user_uuid ~= '') then
 				local sql = "SELECT user_status FROM v_users ";
@@ -175,9 +160,6 @@
 						end
 						dbh:query(sql, params);
 				end);
-
-				
-
 			end
 
 		--set the presence to terminated - turn the lamp off:

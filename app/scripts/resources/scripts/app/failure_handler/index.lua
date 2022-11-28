@@ -109,13 +109,6 @@
 					end
 			end
 		end
-
-		--session:answer();
-		if domain_name ~= "demo.eeve.online" then 
-			session:hangup("USER_BUSY");
-		end 
-
-
 	end
 
 --handle originate_disposition
@@ -227,14 +220,6 @@
 						session:transfer(forward_user_not_registered_destination, "XML", context);
 					end
 				else
-					if(session:getVariable("domain_name") == "vdk-bb-hq.realyzer.net" and #session:getVariable("sip_from_user")< 5) then 
-
-						session:answer()
-						session:sleep(500)
-						session:execute("playback","/var/lib/freeswitch/recordings/vdk-bb-hq.realyzer.net/nicht_angemeldet.wav")
-						missed();
-
-					end 
 					--send missed call notification
 					missed();
 				end
@@ -266,27 +251,3 @@
 			end
 		end
 	end
-
-
-freeswitch.consoleLog("NOTICE", "Test");
-
-if domain_name ~= "demo.eeve.online" and forward_user_not_registered_enabled == false and forward_busy_enabled == false and forward_no_answer_enabled == false then 
-	freeswitch.consoleLog("NOTICE", "Tester");
-	session:hangup("USER_BUSY");
-end 
-
---Handle DND
-
-local dndStatus = session:getVariable("do_not_disturb")
-
-if (dndStatus == "true") then 
-	freeswitch.consoleLog("NOTICE", "[failure_handler] - DND-ON - hangup(USER_BUSY)");
-	session:hangup("USER_BUSY");
-end
-
-if (originate_disposition == "USER_BUSY") then 
-	freeswitch.consoleLog("NOTICE", "[failure_handler] - USER_BUSY - hangup(USER_BUSY)");
-	session:hangup("USER_BUSY");
-end
-
-

@@ -24,6 +24,7 @@
 -- default_language, default_dialect = 'ru', 'ru'
 -- var = text['label-attached']
 local function make_text(dict, language, dialect)
+
 	
 	language, dialect = 'de', 'de'
 	

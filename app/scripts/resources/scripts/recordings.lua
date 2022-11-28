@@ -91,11 +91,11 @@
 	function begin_record(session, sounds_dir, recordings_dir)
 
 		--set the sounds path for the language, dialect and voice
-			default_language = "de";
-			default_dialect = "de"
-			default_voice = "callie"
-			if (not default_language) then default_language = 'de'; end
-			if (not default_dialect) then default_dialect = 'de'; end
+			default_language = session:getVariable("default_language");
+			default_dialect = session:getVariable("default_dialect");
+			default_voice = session:getVariable("default_voice");
+			if (not default_language) then default_language = 'en'; end
+			if (not default_dialect) then default_dialect = 'us'; end
 			if (not default_voice) then default_voice = 'callie'; end
 			recording_id = session:getVariable("recording_id");
 			recording_prefix = session:getVariable("recording_prefix");
@@ -297,12 +297,12 @@ if (session:ready()) then
 		if (storage_path ~= nil and string.len(storage_path) > 0) then recordings_dir = storage_path; end
 
 	--set the sounds path for the language, dialect and voice
-			default_language = "de";
-			default_dialect = "de"
-			default_voice = "callie"
-			if (not default_language) then default_language = 'de'; end
-			if (not default_dialect) then default_dialect = 'de'; end
-			if (not default_voice) then default_voice = 'callie'; end
+		default_language = session:getVariable("default_language");
+		default_dialect = session:getVariable("default_dialect");
+		default_voice = session:getVariable("default_voice");
+		if (not default_language) then default_language = 'en'; end
+		if (not default_dialect) then default_dialect = 'us'; end
+		if (not default_voice) then default_voice = 'callie'; end
 
 	--if the pin number is provided then require it
 		if (pin_number) then
