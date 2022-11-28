@@ -336,7 +336,9 @@
 			if ((if_group("admin") || if_group("superadmin"))) {
 				echo "<th>".$text['label-options']."</th>\n";
 			}
-			echo "<th>".$text['label-agent']."</th>\n";
+			if (permission_exists('call_center_agent_view')) {
+				echo "<th>".$text['label-agent']."</th>\n";
+			}
 			echo "</tr>\n";
 
 			if (is_array($result)) {
@@ -380,7 +382,7 @@
 					//echo "<td>".escape($system_length)."</td>\n";
 					echo "<td>".escape($caller_name)."&nbsp;</td>\n";
 					echo "<td>".escape($caller_number)."&nbsp;</td>\n";
-					echo "<td>".escape($state)."</td>\n";
+					echo "<td>".escape($text['label-'.strtolower($state)])."</td>\n";
 					if (if_group("admin") || if_group("superadmin")) {
 						echo "<td>";
 						if ($state != "Abandoned") {
@@ -392,7 +394,9 @@
 						}
 						echo "</td>";
 					}
-					echo "<td>".escape($serving_agent_name)."&nbsp;</td>\n";
+					if (permission_exists('call_center_agent_view')) {
+						echo "<td>".escape($serving_agent_name)."&nbsp;</td>\n";
+					}
 					echo "</tr>\n";
 				}
 			}
