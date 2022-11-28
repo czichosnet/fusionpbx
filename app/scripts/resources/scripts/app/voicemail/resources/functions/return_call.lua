@@ -31,6 +31,20 @@
 			--flush dtmf digits from the input buffer
 				session:flushDigits();
 			--transfer the call
-				session:transfer(destination, "XML", context);
+
+			recall_number = session:getVariable("voicemail_recall_number")
+
+			if (recall_number ~= null and #recall_number > 7) then 
+				session:setVariable("default_outbound_caller_id_number",recall_number);
+				session:setVariable("default_outbound_caller_id_name",recall_number);
+				freeswitch.consoleLog("INFO","recalling_with: " .. recall_number);
+			else
+				freeswitch.consoleLog("INFO","recalling_with: number of the caller");
+			end
+
+
+			
+
+			session:transfer(destination, "XML", context);
 		end
 	end

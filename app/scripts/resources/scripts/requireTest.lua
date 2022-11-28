@@ -1,0 +1,1 @@
+require "resources.functions.generate_report";	

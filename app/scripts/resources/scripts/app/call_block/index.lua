@@ -138,6 +138,7 @@
 				if (debug["sql"]) then
 					freeswitch.consoleLog("notice", "[dialplan] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
 				end
+				
 				local found = false;
 				dbh:query(sql, params, function(row)
 					found = true;
@@ -149,8 +150,11 @@
 					call_block_count = row.call_block_count;
 					extension_uuid = row.extension_uuid;
 
+					
+
 					--cached_value = domain_uuid..','..caller_id_number;
 				end);
+
 
 			--set call block default to false
 				call_block = false;
