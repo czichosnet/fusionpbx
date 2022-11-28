@@ -3,6 +3,5 @@
 
 include:config "y000000000065.cfg"
 include:config "{$mac}.cfg"
-##include:config "WebItemsLevel.cfg"
 
 overwrite_mode = {$yealink_overwrite_mode}

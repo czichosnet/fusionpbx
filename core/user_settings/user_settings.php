@@ -24,8 +24,11 @@
  Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//includes
-	require_once "root.php";
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
@@ -108,7 +111,6 @@
 	$sql_where .= "and not ( ";
 	$sql_where .= "(user_setting_category = 'domain' and user_setting_subcategory = 'language') ";
 	$sql_where .= "or (user_setting_category = 'domain' and user_setting_subcategory = 'time_zone') ";
-	$sql_where .= "or (user_setting_category = 'message' and user_setting_subcategory = 'key') ";
 	$sql_where .= ") ";
 	$parameters['user_uuid'] = $user_uuid;
 

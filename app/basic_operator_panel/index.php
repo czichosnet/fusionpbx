@@ -25,8 +25,11 @@
 	Luis Daniel Lucio Quiroz <dlucio@okay.com.mx>
 */
 
-//includes
-	include "root.php";
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -115,7 +118,7 @@
 						foreach($_SESSION['user']['extension'] as $row) {
 							//build the array
 							$array['extensions'][$x]['extension_uuid'] = $row['extension_uuid'];
-							$array['extensions'][$x]['dial_string'] = 'error/user_busy';
+							$array['extensions'][$x]['dial_string'] = '!USER_BUSY';
 							$array['extensions'][$x]['do_not_disturb'] = 'true';
 
 							//delete extension from the cache
@@ -244,11 +247,20 @@ unset($refresh_default);
 	}
 
 	loadXmlHttp.prototype.stateChanged=function () {
-	if (this.xmlHttp.readyState == 4 && (this.xmlHttp.status == 200 || !/^http/.test(window.location.href)))
-		//this.el.innerHTML = this.xmlHttp.responseText;
-		document.getElementById('ajax_reponse').innerHTML = this.xmlHttp.responseText;
-		if(document.getElementById('sort')){
-			 if(document.getElementById('sort').value != "") 
+		var url = new URL(this.xmlHttp.responseURL);
+		if (/login\.php$/.test(url.pathname)) {
+			// You are logged out. Stop refresh!
+			refresh_stop();
+			url.searchParams.set('path', '<?php echo $_SERVER['REQUEST_URI']; ?>');
+			window.location.href = url.href;
+			return;
+		}
+
+		if (this.xmlHttp.readyState == 4 && (this.xmlHttp.status == 200 || !/^http/.test(window.location.href)))
+			//this.el.innerHTML = this.xmlHttp.responseText;
+			document.getElementById('ajax_reponse').innerHTML = this.xmlHttp.responseText;
+		if (document.getElementById('sort')) {
+			if (document.getElementById('sort').value != "")
 				document.getElementById('sort1').value=document.getElementById('sort').value;
 		}
 	}

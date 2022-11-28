@@ -1,7 +1,10 @@
 <?php
 
-//includes
-	include_once "root.php"; 
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -30,7 +33,8 @@
 	echo "	<select name='subaction' id='action' class='formfld' style='".$select_style."'>\n";
 	echo "	<option value=''></option>\n";
 	foreach($destinations as $key => $rows) {
-		if ($key == $action && permission_exists($destination->singular($key)."_destinations")) {
+		$singular = $destination->singular($key);
+		if ($key == $action && permission_exists("{$singular}_destinations")) {
 			if (is_array($rows)) {
 				foreach($rows as $row) {
 
@@ -50,7 +54,8 @@
 					$select_label = str_replace('email-icon', '&#9993', $select_label);
 
 					//add the select option
-					echo "		<option value='".$select_value."'>".$select_label."</option>\n";
+					$uuid = isset($row[$singular.'_uuid']) ? $row[$singular.'_uuid'] : $row['uuid'];
+					echo "		<option id='{$uuid}' value='".$select_value."'>".$select_label."</option>\n";
 				}
 			}
 		}

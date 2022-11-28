@@ -17,15 +17,18 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2020
+	Portions created by the Initial Developer are Copyright (C) 2008-2022
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//includes
-	require_once "root.php";
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
@@ -97,7 +100,7 @@
 	}
 
 //set the type
-	switch ($_GET['type']) {
+	switch ($_REQUEST['type']) {
 		case 'inbound': $destination_type = 'inbound'; break;
 		case 'outbound': $destination_type = 'outbound'; break;
 		case 'local': $destination_type = 'local'; break;
@@ -140,7 +143,8 @@
 
 //prepare to page the results
 	$rows_per_page = ($_SESSION['domain']['paging']['numeric'] != '') ? $_SESSION['domain']['paging']['numeric'] : 50;
-	$param = "&search=".$search;
+	$param = "&search=".urlencode($search);
+	$param .= "&type=".$destination_type;
 	if ($_GET['show'] == "all" && permission_exists('destination_all')) {
 		$param .= "&show=all";
 	}
@@ -197,11 +201,14 @@
 	if (permission_exists('destination_import')) {
 		echo button::create(['type'=>'button','label'=>$text['button-import'],'icon'=>$_SESSION['theme']['button_icon_import'],'link'=>'destination_imports.php']);
 	}
+	if (permission_exists('destination_export')) {
+		echo button::create(['type'=>'button','label'=>$text['button-export'],'icon'=>$_SESSION['theme']['button_icon_export'],'link'=>'destination_download.php']);
+	}
 	if (permission_exists('destination_add')) {
-		echo button::create(['type'=>'button','label'=>$text['button-add'],'icon'=>$_SESSION['theme']['button_icon_add'],'id'=>'btn_add','style'=>'margin-left: 15px;','link'=>'destination_edit.php']);
+		echo button::create(['type'=>'button','label'=>$text['button-add'],'icon'=>$_SESSION['theme']['button_icon_add'],'id'=>'btn_add','style'=>'margin-left: 15px;','link'=>'destination_edit.php?type='.urlencode($destination_type)]);
 	}
 	if (permission_exists('destination_delete') && $destinations) {
-		echo button::create(['type'=>'button','label'=>$text['button-delete'],'icon'=>$_SESSION['theme']['button_icon_delete'],'name'=>'btn_delete','onclick'=>"modal_open('modal-delete','btn_delete');"]);
+		echo button::create(['type'=>'button','label'=>$text['button-delete'],'icon'=>$_SESSION['theme']['button_icon_delete'],'id'=>'btn_delete','name'=>'btn_delete','style'=>'display: none;','onclick'=>"modal_open('modal-delete','btn_delete');"]);
 	}
 	echo 		"<form id='form_search' class='inline' method='get'>\n";
 	if (permission_exists('destination_all')) {
@@ -212,9 +219,10 @@
 			echo button::create(['type'=>'button','label'=>$text['button-show_all'],'icon'=>$_SESSION['theme']['button_icon_all'],'link'=>'?type='.urlencode($destination_type).'&show=all'.($search != '' ? "&search=".urlencode($search) : null)]);
 		}
 	}
-	echo 		"<input type='text' class='txt list-search' name='search' id='search' value=\"".escape($search)."\" placeholder=\"".$text['label-search']."\" onkeydown='list_search_reset();'>";
-	echo button::create(['label'=>$text['button-search'],'icon'=>$_SESSION['theme']['button_icon_search'],'type'=>'submit','id'=>'btn_search','style'=>($search != '' ? 'display: none;' : null)]);
-	echo button::create(['label'=>$text['button-reset'],'icon'=>$_SESSION['theme']['button_icon_reset'],'type'=>'button','id'=>'btn_reset','link'=>'destinations.php','style'=>($search == '' ? 'display: none;' : null)]);
+	echo "		<input type='hidden' name='type' value=\"".escape($destination_type)."\">\n";
+	echo "		<input type='text' class='txt list-search' name='search' id='search' value=\"".escape($search)."\" placeholder=\"".$text['label-search']."\" onkeydown=''>";
+	echo button::create(['label'=>$text['button-search'],'icon'=>$_SESSION['theme']['button_icon_search'],'type'=>'submit','id'=>'btn_search']);
+	//echo button::create(['label'=>$text['button-reset'],'icon'=>$_SESSION['theme']['button_icon_reset'],'type'=>'button','id'=>'btn_reset','link'=>'destinations.php','style'=>($search == '' ? 'display: none;' : null)]);
 	if ($paging_controls_mini != '') {
 		echo 	"<span style='margin-left: 15px;'>".$paging_controls_mini."</span>";
 	}
@@ -230,15 +238,16 @@
 	echo $text['description-destinations']."\n";
 	echo "<br /><br />\n";
 
-	echo "<form id='form_list' method='post'>\n";
+	echo "<form id='form_list' method='POST'>\n";
 	echo "<input type='hidden' id='action' name='action' value=''>\n";
+	echo "<input type='hidden' name='type' value=\"".escape($destination_type)."\">\n";
 	echo "<input type='hidden' name='search' value=\"".escape($search)."\">\n";
 
 	echo "<table class='list'>\n";
 	echo "<tr class='list-header'>\n";
 	if (permission_exists('destination_delete')) {
 		echo "	<th class='checkbox'>\n";
-		echo "		<input type='checkbox' id='checkbox_all' name='checkbox_all' onclick='list_all_toggle();' ".($destinations ?: "style='visibility: hidden;'").">\n";
+		echo "		<input type='checkbox' id='checkbox_all' name='checkbox_all' onclick='list_all_toggle(); checkbox_on_change(this);' ".($destinations ?: "style='visibility: hidden;'").">\n";
 		echo "	</th>\n";
 	}
 	if ($_GET['show'] == "all" && permission_exists('destination_all')) {
@@ -254,7 +263,7 @@
 	}
 	echo th_order_by('destination_number', $text['label-destination_number'], $order_by, $order, $param, "class='shrink'");
 	if (!$_GET['show'] == "all") {
-		echo  "<th>". $text['label-detail_action']."</th>";
+		echo  "<th>". $text['label-destination_actions']."</th>";
 	}
 	if (permission_exists("destination_context")) {
 		echo th_order_by('destination_context', $text['label-destination_context'], $order_by, $order, $param);
@@ -273,13 +282,26 @@
 	if (is_array($destinations) && @sizeof($destinations) != 0) {
 		$x = 0;
 		foreach($destinations as $row) {
+
+			//prepare the destination actions
+			$destination_actions = json_decode($row['destination_actions'], true);
+			if (is_array($destination_actions)) {
+				foreach($destination_actions as $action) {
+					$destination_app = $action['destination_app'];
+					$destination_data = $action['destination_data'];
+				}
+			}
+
+			//create the row link
 			if (permission_exists('destination_edit')) {
 				$list_row_url = "destination_edit.php?id=".urlencode($row['destination_uuid']);
 			}
+
+			//show the data
 			echo "<tr class='list-row' href='".$list_row_url."'>\n";
 			if (permission_exists('destination_delete')) {
 				echo "	<td class='checkbox'>\n";
-				echo "		<input type='checkbox' name='destinations[$x][checked]' id='checkbox_".$x."' value='true' onclick=\"if (!this.checked) { document.getElementById('checkbox_all').checked = false; }\">\n";
+				echo "		<input type='checkbox' name='destinations[$x][checked]' id='checkbox_".$x."' value='true' onclick=\"checkbox_on_change(this); if (!this.checked) { document.getElementById('checkbox_all').checked = false; }\">\n";
 				echo "		<input type='hidden' name='destinations[$x][uuid]' value='".escape($row['destination_uuid'])."' />\n";
 				echo "	</td>\n";
 			}
@@ -293,7 +315,7 @@
 				echo "	<td>".escape($domain)."</td>\n";
 			}
 			echo "	<td>".escape($row['destination_type'])."&nbsp;</td>\n";
-			
+
 			echo "	<td>".escape($row['destination_prefix'])."&nbsp;</td>\n";
 			if (permission_exists('destination_trunk_prefix')) {
 				echo "	<td>".escape($row['destination_trunk_prefix'])."&nbsp;</td>\n";
@@ -312,7 +334,7 @@
 			echo "	</td>\n";
 
 			if (!$_GET['show'] == "all") {
-				echo "	<td class='overflow' style='min-width: 125px;'>".action_name($destination_array, $row['destination_app'].':'.$row['destination_data'])."&nbsp;</td>\n";
+				echo "	<td class='overflow' style='min-width: 125px;'>".action_name($destination_array, $destination_app.':'.$destination_data)."&nbsp;</td>\n";
 			}
 			if (permission_exists("destination_context")) {
 				echo "	<td>".escape($row['destination_context'])."&nbsp;</td>\n";
@@ -329,6 +351,11 @@
 				echo "	</td>\n";
 			}
 			echo "</tr>\n";
+
+			//unset the destination app and data
+			unset($destination_app, $destination_data);
+
+			//increment the id
 			$x++;
 		}
 		unset($destinations);

@@ -33,6 +33,10 @@ class cache {
 	 * @var string $value	string to be cached
 	 */
 	public function set($key, $value) {
+
+		//change the delimiter
+			$key = str_replace(":", ".", $key);
+
 		//save to memcache
 			if ($_SESSION['cache']['method']['text'] == "memcache") {
 				//connect to event socket
@@ -51,9 +55,7 @@ class cache {
 
 		//save to the file cache
 			if ($_SESSION['cache']['method']['text'] == "file") {
-				if (file_exists($_SESSION['cache']['location']['text'] . "/" . $key)) {
-					$result = file_put_contents($_SESSION['cache']['location']['text'] . "/" . $key, $value);
-				}
+				$result = file_put_contents($_SESSION['cache']['location']['text'] . "/" . $key, $value);
 			}
 
 		//return result
@@ -65,6 +67,9 @@ class cache {
 	 * @var string $key		cache id
 	 */
 	public function get($key) {
+
+		//change the delimiter
+			$key = str_replace(":", ".", $key);
 
 		//cache method memcache 
 			if ($_SESSION['cache']['method']['text'] == "memcache") {
@@ -101,9 +106,16 @@ class cache {
 	 */
 	public function delete($key) {
 
+		//debug information
+			if (isset($_SESSION['cache']['syslog']['boolean']) && $_SESSION['cache']['syslog']['boolean'] == "true") {
+				openlog("fusionpbx", LOG_PID | LOG_PERROR, LOG_USER);
+				syslog(LOG_WARNING, "debug: cache: [key: ".$key.", script: ".$_SERVER['SCRIPT_NAME'].", line: ".__line__."]");
+				closelog();
+			}
+
 		//cache method memcache 
 			if ($_SESSION['cache']['method']['text'] == "memcache") {
-				// connect to event socket
+				//connect to event socket
 					$fp = event_socket_create($_SESSION['event_socket_ip_address'], $_SESSION['event_socket_port'], $_SESSION['event_socket_password']);
 					if ($fp === false) {
 						return false;
@@ -155,14 +167,20 @@ class cache {
 					}
 			}
 
-		// return result
-			return $result;
 	}
 
 	/**
 	 * Delete the entire cache
 	 */
 	public function flush() {
+
+		//debug information
+			if (isset($_SESSION['cache']['syslog']['boolean']) && $_SESSION['cache']['syslog']['boolean'] == "true") {
+				openlog("fusionpbx", LOG_PID | LOG_PERROR, LOG_USER);
+				syslog(LOG_WARNING, "debug: cache: [flush: all, script: ".$_SERVER['SCRIPT_NAME'].", line: ".__line__."]");
+				closelog();
+			}
+
 		//cache method memcache 
 			if ($_SESSION['cache']['method']['text'] == "memcache") {
 				// connect to event socket
@@ -189,6 +207,12 @@ class cache {
 
 		//cache method file 
 			if ($_SESSION['cache']['method']['text'] == "file") {
+				// connect to event socket
+					$fp = event_socket_create($_SESSION['event_socket_ip_address'], $_SESSION['event_socket_port'], $_SESSION['event_socket_password']);
+					if ($fp === false) {
+						return false;
+					}
+
 				//send a custom event
 					$event = "sendevent CUSTOM\n";
 					$event .= "Event-Name: CUSTOM\n";

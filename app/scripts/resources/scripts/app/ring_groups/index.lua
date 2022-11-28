@@ -1,5 +1,5 @@
 --	Part of FusionPBX
---	Copyright (C) 2010-2020 Mark J Crane <markjcrane@fusionpbx.com>
+--	Copyright (C) 2010-2022 Mark J Crane <markjcrane@fusionpbx.com>
 --	All rights reserved.
 --
 --	Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,7 @@
 	require "resources.functions.file_exists";
 	require "resources.functions.channel_utils"
 	require "resources.functions.format_ringback"
+	require "resources.functions.send_presence";
 
 --- include libs
 	local route_to_bridge = require "resources.functions.route_to_bridge"
@@ -74,6 +75,7 @@
 				or session:getVariable("originate_disposition") == "RECOVERY_ON_TIMER_EXPIRE"
 				or session:getVariable("originate_disposition") == "failure"
 				or session:getVariable("originate_disposition") == "ORIGINATOR_CANCEL"
+				or session:getVariable("originate_disposition") == "UNALLOCATED_NUMBER"
 			) then
 				--set the status
 					status = 'missed'
@@ -160,6 +162,7 @@
 		call_direction = session:getVariable("call_direction");
 		accountcode = session:getVariable("accountcode");
 		local_ip_v4 = session:getVariable("local_ip_v4")
+		hold_music = session:getVariable("hold_music");
 	end
 
 --set caller id
@@ -181,7 +184,6 @@
 	end
 
 --define additional variables
-	uuids = "";
 	external = "false";
 
 --set the sounds path for the language, dialect and voice
@@ -210,7 +212,7 @@
 	--end
 
 --get current switchname
-	hostname = trim(api:execute("switchname", ""))
+	hostname = trim(api:execute("hostname", ""))
 
 --get the ring group
 	ring_group_forward_enabled = '';
@@ -299,6 +301,10 @@
 
 --check the missed calls
 	function missed()
+		--add missed call channel variable
+			if (session) then
+				session:setVariable("missed_call", 'true');
+			end
 
 		--send missed call email
 		if (missed_call_app ~= nil and missed_call_data ~= nil) then
@@ -339,6 +345,12 @@
 						["X-FusionPBX-Email-Type"]  = 'missed';
 					}
 
+				--remove quotes from caller id name and number
+					caller_id_name = caller_id_name:gsub("'", "&#39;");
+					caller_id_name = caller_id_name:gsub([["]], "&#34;");
+					caller_id_number = caller_id_number:gsub("'", "&#39;");
+					caller_id_number = caller_id_number:gsub([["]], "&#34;");
+			
 				--prepare the subject
 					subject = subject:gsub("${caller_id_name}", caller_id_name);
 					subject = subject:gsub("${caller_id_number}", caller_id_number);
@@ -361,19 +373,19 @@
 					body = body:gsub("&nbsp;", " ");
 					body = body:gsub("\n", "");
 					body = body:gsub("\n", "");
-					body = body:gsub("'", "&#39;");
-					body = body:gsub([["]], "&#34;");
 					body = trim(body);
 
 				--send the email
-					if (debug["info"]) then
-						freeswitch.consoleLog("notice", "[missed call]: "..mail_to.." '"..subject.."' '"..body.."'\n");
-					end
-
 					send_mail(headers,
+						nil,
 						mail_to,
 						{subject, body}
 					);
+
+				--send the debug info
+					if (debug["info"]) then
+						freeswitch.consoleLog("notice", "[missed call]: "..mail_to.." '"..subject.."' '"..body.."'\n");
+					end
 			end
 		end
 	end
@@ -737,17 +749,8 @@
 							delay_name = "leg_delay_start";
 						end
 
-					--create a new uuid and add it to the uuid list
-						new_uuid = api:executeString("create_uuid");
-						if (string.len(uuids) == 0) then
-							uuids = new_uuid;
-						else
-							uuids = uuids ..",".. new_uuid;
-						end
-						session:execute("set", "uuids="..uuids);
-
 					--export the ringback
-						if (ring_group_distinctive_ring ~= nil) then
+						if (ring_group_distinctive_ring and #ring_group_distinctive_ring > 0) then
 							if (local_ip_v4 ~= nil) then
 								ring_group_distinctive_ring = ring_group_distinctive_ring:gsub("${local_ip_v4}", local_ip_v4);
 							end
@@ -808,8 +811,16 @@
 							--get the extension_uuid
 							cmd = "user_data ".. destination_number .."@"..domain_name.." var extension_uuid";
 							extension_uuid = trim(api:executeString(cmd));
+
+							--set hold music
+							if (hold_music == nil) then
+								hold_music = '';
+							else
+								hold_music = ",hold_music="..hold_music;
+							end
+
 							--send to user
-							local dial_string_to_user = "[sip_invite_domain="..domain_name..",domain_name="..domain_name..",call_direction="..call_direction..","..group_confirm.."leg_timeout="..destination_timeout..","..delay_name.."="..destination_delay..",dialed_extension=" .. row.destination_number .. ",extension_uuid="..extension_uuid .. row.record_session .. "]user/" .. row.destination_number .. "@" .. domain_name;
+							local dial_string_to_user = "[sip_invite_domain="..domain_name..",domain_name="..domain_name..",call_direction="..call_direction..","..group_confirm.."leg_timeout="..destination_timeout..","..delay_name.."="..destination_delay..",dialed_extension=" .. row.destination_number .. ",extension_uuid=".. extension_uuid .. row.record_session .. hold_music .."]user/" .. row.destination_number .. "@" .. domain_name;
 							dial_string = dial_string_to_user;
 						elseif (tonumber(destination_number) == nil) then
 							--sip uri
@@ -853,7 +864,7 @@
 								end
 
 							--set the destination dial string
-								dial_string = "[ignore_early_media=true,toll_allow=".. toll_allow ..",".. caller_id ..",sip_invite_domain="..domain_name..",domain_name="..domain_name..",domain_uuid="..domain_uuid..",call_direction="..call_direction..","..group_confirm.."leg_timeout="..destination_timeout..","..delay_name.."="..destination_delay.."]"..route_bridge
+								dial_string = "[toll_allow=".. toll_allow ..",".. caller_id ..",sip_invite_domain="..domain_name..",domain_name="..domain_name..",domain_uuid="..domain_uuid..",call_direction="..call_direction..","..group_confirm.."leg_timeout="..destination_timeout..","..delay_name.."="..destination_delay.."]"..route_bridge
 						end
 
 					--add a delimiter between destinations
@@ -889,7 +900,6 @@
 		--session execute
 			if (session:ready()) then
 				--set the variables
-					session:execute("set", "ignore_early_media=true");
 					session:execute("set", "hangup_after_bridge=true");
 					session:execute("set", "continue_on_fail=true");
 
@@ -978,7 +988,18 @@
 						freeswitch.consoleLog("NOTICE", "[ring group] app_data: "..app_data.."\n");
 						-- log.noticef("bridge begin: originate_disposition:%s answered:%s ready:%s bridged:%s", session:getVariable("originate_disposition"), session:answered() and "true" or "false", session:ready() and "true" or "false", session:bridged() and "true" or "false")
 						if (ring_group_strategy ~= "rollover") then
+							if (session:getVariable("ring_group_send_presence") == "true") then
+								session:setVariable("presence_id", ring_group_extension.."@"..domain_name);
+								send_presence(uuid, ring_group_extension.."@"..domain_name, "early");
+							end
+							
 							session:execute("bridge", app_data);
+							
+							--set the presence to terminated and unset presence_id
+							if (session:getVariable("ring_group_send_presence") == "true") then
+								session:setVariable("presence_id", "");
+								send_presence(uuid, ring_group_extension.."@"..domain_name, "terminated");
+							end
 						end
 						-- log.noticef("bridge done: originate_disposition:%s answered:%s ready:%s bridged:%s", session:getVariable("originate_disposition"), session:answered() and "true" or "false", session:ready() and "true" or "false", session:bridged() and "true" or "false")
 					end

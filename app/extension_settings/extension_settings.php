@@ -21,8 +21,11 @@
 	the Initial Developer. All Rights Reserved.
 */
 
-//includes
-	require_once "root.php";
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -62,34 +65,25 @@
 			exit;
 		}
 
-		//prepare the array
-		foreach($extension_settings as $row) {
-			$array['extension_settings'][$x]['checked'] = $row['checked'];
-			$array['extension_settings'][$x]['extension_setting_uuid'] = $row['extension_setting_uuid'];
-			$array['extension_settings'][$x]['extension_setting_enabled'] = $row['extension_setting_enabled'];
-			$x++;
-		}
-
 		//prepare the database object
-		$database = new database;
-		$database->app_name = 'extension_settings';
-		$database->app_uuid = '1416a250-f6e1-4edc-91a6-5c9b883638fd';
+		$obj = new extension_settings;
 
 		//send the array to the database class
 		switch ($action) {
 			case 'copy':
 				if (permission_exists('extension_setting_add')) {
-					$database->copy($array);
+					$obj->copy($extension_settings);
 				}
 				break;
 			case 'toggle':
 				if (permission_exists('extension_setting_edit')) {
-					$database->toggle($array);
+					$obj->toggle($extension_settings);
 				}
 				break;
 			case 'delete':
 				if (permission_exists('extension_setting_delete')) {
-					$database->delete($array);
+					$obj->extension_uuid = $extension_uuid;
+					$obj->delete($extension_settings);
 				}
 				break;
 		}
@@ -280,7 +274,7 @@
 			if (permission_exists('extension_setting_add') || permission_exists('extension_setting_edit') || permission_exists('extension_setting_delete')) {
 				echo "	<td class='checkbox'>\n";
 				echo "		<input type='checkbox' name='extension_settings[$x][checked]' id='checkbox_".$x."' class='checkbox_".$extension_setting_type."' value='true' onclick=\"checkbox_on_change(this); if (!this.checked) { document.getElementById('checkbox_all_".$extension_setting_type."').checked = false; }\">\n";
-				echo "		<input type='hidden' name='extension_settings[$x][extension_setting_uuid]' value='".escape($row['extension_setting_uuid'])."' />\n";
+				echo "		<input type='hidden' name='extension_settings[$x][uuid]' value='".escape($row['extension_setting_uuid'])."' />\n";
 				echo "	</td>\n";
 			}
 			//if ($_GET['show'] == 'all' && permission_exists('extension_setting_all')) {

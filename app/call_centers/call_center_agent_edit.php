@@ -25,8 +25,11 @@
 	Luis Daniel Lucio Quiroz <dlucio@okay.com.mx>
 */
 
-//includes
-	require_once "root.php";
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -207,7 +210,6 @@
 			}
 			else {
 				//add the call_timeout and confirm
-				$agent_contact = $first.',call_timeout='.$agent_call_timeout.$last;
 				$agent_contact = "{".$confirm.",call_timeout=".$agent_call_timeout.",sip_invite_domain=".$_SESSION['domain_name']."}".$agent_contact;
 			}
 		}
@@ -532,7 +534,7 @@
 	echo "	".$text['label-no_answer_delay_time']."\n";
 	echo "</td>\n";
 	echo "<td class='vtable' align='left'>\n";
-	echo "  <input class='formfld' type='number' name='agent_no_answer_delay_time' maxlength='255' min='1' step='1' value='".escape($agent_no_answer_delay_time)."'>\n";
+	echo "  <input class='formfld' type='number' name='agent_no_answer_delay_time' maxlength='255' min='0' step='1' value='".escape($agent_no_answer_delay_time)."'>\n";
 	echo "<br />\n";
 	echo $text['description-no_answer_delay_time']."\n";
 	echo "</td>\n";
@@ -554,7 +556,7 @@
 	echo "	".$text['label-wrap_up_time']."\n";
 	echo "</td>\n";
 	echo "<td class='vtable' align='left'>\n";
-	echo "  <input class='formfld' type='number' name='agent_wrap_up_time' maxlength='255' min='1' step='1' value='".escape($agent_wrap_up_time)."'>\n";
+	echo "  <input class='formfld' type='number' name='agent_wrap_up_time' maxlength='255' min='0' step='1' value='".escape($agent_wrap_up_time)."'>\n";
 	echo "<br />\n";
 	echo $text['description-wrap_up_time']."\n";
 	echo "</td>\n";
@@ -565,7 +567,7 @@
 	echo "	".$text['label-reject_delay_time']."\n";
 	echo "</td>\n";
 	echo "<td class='vtable' align='left'>\n";
-	echo "  <input class='formfld' type='number' name='agent_reject_delay_time' maxlength='255' min='1' step='1' value='".escape($agent_reject_delay_time)."'>\n";
+	echo "  <input class='formfld' type='number' name='agent_reject_delay_time' maxlength='255' min='0' step='1' value='".escape($agent_reject_delay_time)."'>\n";
 	echo "<br />\n";
 	echo $text['description-reject_delay_time']."\n";
 	echo "</td>\n";

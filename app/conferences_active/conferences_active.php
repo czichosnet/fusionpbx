@@ -25,8 +25,11 @@
 	James Rose <james.o.rose@gmail.com>
 */
 
-//includes
-	require_once "root.php";
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -79,9 +82,17 @@ function loadXmlHttp(url, id) {
 }
 
 loadXmlHttp.prototype.stateChanged=function () {
-if (this.xmlHttp.readyState == 4 && (this.xmlHttp.status == 200 || !/^http/.test(window.location.href)))
-	//this.el.innerHTML = this.xmlHttp.responseText;
-	document.getElementById('ajax_response').innerHTML = this.xmlHttp.responseText;
+	var url = new URL(this.xmlHttp.responseURL);
+	if (/login\.php$/.test(url.pathname)) {
+		// You are logged out. Stop refresh!
+		url.searchParams.set('path', '<?php echo $_SERVER['REQUEST_URI']; ?>');
+		window.location.href = url.href;
+		return;
+	}
+
+	if (this.xmlHttp.readyState == 4 && (this.xmlHttp.status == 200 || !/^http/.test(window.location.href)))
+		//this.el.innerHTML = this.xmlHttp.responseText;
+		document.getElementById('ajax_response').innerHTML = this.xmlHttp.responseText;
 
 	//link table rows (except the last - the list_control_icons cell) on a table with a class of 'tr_hover', according to the href attribute of the <tr> tag
 		$('.tr_hover tr,.list tr').each(function(i,e) {

@@ -17,7 +17,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2017 - 2020
+	Portions created by the Initial Developer are Copyright (C) 2017 - 2022
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -90,6 +90,11 @@ if (!class_exists('destinations')) {
 					$destination_regex .= "^".$array['destination_area_code'].$array['destination_number']."\$|";
 					$destination_regex .= "^".$array['destination_number']."\$)";
 				}
+				elseif (isset($array['destination_prefix']) && isset($array['destination_trunk_prefix']) && isset($array['destination_number'])) {
+					$destination_regex = "(\+?".$array['destination_prefix'].$array['destination_number']."\$|";
+					$destination_regex .= "^".$array['destination_trunk_prefix'].$array['destination_number']."\$|";
+					$destination_regex .= "^".$array['destination_number']."\$)";
+				}
 				elseif (isset($array['destination_prefix']) && isset($array['destination_area_code']) && isset($array['destination_number'])) {
 					$destination_regex = "(\+?".$array['destination_prefix'].$array['destination_area_code'].$array['destination_number']."\$|";
 					$destination_regex .= "^".$array['destination_area_code'].$array['destination_number']."\$|";
@@ -109,12 +114,13 @@ if (!class_exists('destinations')) {
 
 					//add prefix
 						if (strlen($destination_prefix) > 0) {
-							if (strlen($destination_prefix) > 0 && strlen($destination_prefix) < 4) {
-								$plus = (substr($destination_prefix, 0, 1) == "+") ? '' : '\+?';
+							$destination_prefix = str_replace("+", "", $destination_prefix);
+							$plus = '\+?';
+							if (strlen($destination_prefix) == 1) {
 								$destination_prefix = $plus.$destination_prefix.'?';
 							}
 							else {
-								$destination_prefix = '(?:'.$destination_prefix.')?';
+								$destination_prefix = $plus.'(?:'.$destination_prefix.')?';
 							}
 						}
 
@@ -354,7 +360,7 @@ if (!class_exists('destinations')) {
 						$label2 = $label;
 						foreach ($row['result']['data'] as $data) {
 							$select_value = $row['select_value'][$destination_type];
-							$select_label = $row['select_label'];//$name." ".$label." ".$text2['title-recordingHangup'];//
+							$select_label = $row['select_label'];
 							foreach ($row['field'] as $key => $value) {
 								if ($key == 'destination' and is_array($value)){
 									if ($value['type'] === 'csv') {
@@ -476,10 +482,11 @@ if (!class_exists('destinations')) {
 				$language2 = new text;
 
 				//build the destination select list in html
-				$response .= "	<select class='formfld' style='".$select_style."' onchange=\"get_destinations('".$destination_id."', '".$destination_type."', this.value);\">\n";
+				$response .= "	<select id='{$destination_id}_type' class='formfld' style='".$select_style."' onchange=\"get_destinations('".$destination_id."', '".$destination_type."', this.value);\">\n";
 				$response .= " 		<option value=''></option>\n";
 				foreach($_SESSION['destinations']['array'][$destination_type] as $key => $value) {
-					if (permission_exists($destination->singular($key)."_destinations")) {
+					$singular = $this->singular($key);
+					if (permission_exists("{$singular}_destinations")) {
 						//determine if selected
 						$selected = ($key == $destination_key) ? "selected='selected'" : ''; 
 
@@ -493,7 +500,7 @@ if (!class_exists('destinations')) {
 							$text2 = $language2->get($_SESSION['domain']['language']['code'], 'app/dialplans');
 						}
 						//add the application to the select list
-						$response .= "		<option value='".$key."' $selected>".$text2['title-'.$key]."</option>\n";
+						$response .= "		<option id='{$singular}' class='{$key}' value='".$key."' $selected>".$text2['title-'.$key]."</option>\n";
 					}
 				}
 				$response .= "	</select>\n";
@@ -501,12 +508,20 @@ if (!class_exists('destinations')) {
 				foreach($_SESSION['destinations']['array'][$destination_type] as $key => $value) {
 					if ($key == $destination_key) {
 						foreach($value as $k => $row) {
-							$selected = ($row['destination'] == $destination_value) ? "selected='selected'" : ''; 
-							$response .= "		<option value='".$row['destination']."' $selected>".$row['label']."</option>\n";
+							$selected = ($row['destination'] == $destination_value) ? "selected='selected'" : '';
+							$uuid = isset($row[$this->singular($key).'_uuid']) ? $row[$this->singular($key).'_uuid'] : $row['uuid'];
+							$response .= "		<option id='{$uuid}' value='".$row['destination']."' $selected>".$row['label']."</option>\n";
 						}
 					}
 				}
-				$response .= "	</select>\n";
+				$response .= "	</select>";
+				$response .= button::create([
+					'type'=>'button',
+					'icon'=>'external-link-alt',
+					'id'=>'btn_dest_go',
+					'title'=>$text['label-edit'],
+					'onclick'=>"let types = document.getElementById('{$destination_id}_type').options; let opts = document.getElementById('{$destination_id}').options; if(opts[opts.selectedIndex].id && opts[opts.selectedIndex].id.length > 0) {window.open('/app/'+types[types.selectedIndex].className+'/'+types[types.selectedIndex].id+'_edit.php?id='+opts[opts.selectedIndex].id, '_blank');}"
+				])."\n";
 
 				//debug information
 				//echo $response;
@@ -944,7 +959,6 @@ if (!class_exists('destinations')) {
 						$i++;
 					}
 
-					$i = 0;
 					unset($text);
 				}
 			}
@@ -976,7 +990,15 @@ if (!class_exists('destinations')) {
 		* valid destination
 		*/
 		public function valid($destination, $type = 'dialplan') {
+			//allow an empty destination
+			if ($destination == ':') {
+				return true;
+			}
+
+			//get all of the $destinations
 			$destinations = $this->all($type);
+
+			//loop through destinations to validate them
 			foreach($destinations as $category => $array) {
 				if (is_array($array)) {
 					foreach ($array as $key => $value) {

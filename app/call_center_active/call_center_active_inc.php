@@ -17,7 +17,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2019
+	Portions created by the Initial Developer are Copyright (C) 2008-2021
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -25,8 +25,11 @@
 	James Rose <james.o.rose@gmail.com>
 */
 
-//includes
-	include "root.php";
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -60,6 +63,7 @@
 	foreach ($_SESSION['queues'] as $row) {
 		if ($row['call_center_queue_uuid'] == $queue_uuid) {
 			$queue_name = $row['queue_name'];
+			$queue_extension = $row['queue_extension'];
 		}
 	}
 
@@ -108,8 +112,6 @@
 	}
 	else {
 
-	// only show agent list if user has permission
-		if (permission_exists('call_center_agent_view')) {
 		//get the agent list
 
 			//show the title
@@ -118,7 +120,7 @@
 
 			//send the event socket command and get the response
 				//callcenter_config queue list tiers [queue_name] |
-				$switch_command = 'callcenter_config queue list tiers '.$queue_uuid;
+				$switch_command = 'callcenter_config queue list tiers '.$queue_extension."@".$_SESSION["domain_name"];
 				$event_socket_str = trim(event_socket_request($fp, 'api '.$switch_command));
 				$result = str_to_named_array($event_socket_str, '|');
 
@@ -140,7 +142,7 @@
 
 			//send the event socket command and get the response
 				//callcenter_config queue list agents [queue_name] [status] |
-				$switch_command = 'callcenter_config queue list agents '.$queue_uuid;
+				$switch_command = 'callcenter_config queue list agents '.$queue_extension."@".$_SESSION["domain_name"];
 				$event_socket_str = trim(event_socket_request($fp, 'api '.$switch_command));
 				$agent_result = str_to_named_array($event_socket_str, '|');
 
@@ -154,10 +156,7 @@
 					$_SESSION['agents'] = $database->select($sql, $parameters, 'all');
 				}
 
-				//list the agents
-
-				
-				
+			//list the agents
 				echo "<table class='list'>\n";
 				echo "<tr class='list-header'>\n";
 				echo "<th>".$text['label-name']."</th>\n";
@@ -223,14 +222,6 @@
 									$talk_time = $agent_row['talk_time'];
 									$ready_time = $agent_row['ready_time'];
 
-									$last_offered_call_seconds = time() - $last_offered_call;
-									$last_offered_call_length_hour = floor($last_offered_call_seconds/3600);
-									$last_offered_call_length_min = floor($last_offered_call_seconds/60 - ($last_offered_call_length_hour * 60));
-									$last_offered_call_length_sec = $last_offered_call_seconds - (($last_offered_call_length_hour * 3600) + ($last_offered_call_length_min * 60));
-									$last_offered_call_length_min = sprintf("%02d", $last_offered_call_length_min);
-									$last_offered_call_length_sec = sprintf("%02d", $last_offered_call_length_sec);
-									$last_offered_call_length = $last_offered_call_length_hour.':'.$last_offered_call_length_min.':'.$last_offered_call_length_sec;
-
 									$last_status_change_seconds = time() - $last_status_change;
 									$last_status_change_length_hour = floor($last_status_change_seconds/3600);
 									$last_status_change_length_min = floor($last_status_change_seconds/60 - ($last_status_change_length_hour * 60));
@@ -285,16 +276,14 @@
 				} //if
 				echo "</table>\n\n";
 
-
 		//add vertical spacing
 			echo "<br /><br /><br />";
 
-		}//if
 		//get the queue list
 			//send the event socket command and get the response
 				//callcenter_config queue list members [queue_name]
 				if (is_uuid($queue_uuid)) {
-					$switch_command = 'callcenter_config queue list members '.$queue_uuid;
+					$switch_command = 'callcenter_config queue list members '.$queue_extension."@".$_SESSION["domain_name"];
 					$event_socket_str = trim(event_socket_request($fp, 'api '.$switch_command));
 					$result = str_to_named_array($event_socket_str, '|');
 					if (!is_array($result)) { unset($result); }

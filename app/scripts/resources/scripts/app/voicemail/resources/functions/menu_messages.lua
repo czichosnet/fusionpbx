@@ -82,7 +82,7 @@
 								if (debug["info"]) then
 									freeswitch.consoleLog("notice", message_number.." "..string.lower(row["voicemail_message_uuid"]).." "..row["created_epoch"]);
 								end
-								listen_to_recording(message_number, string.lower(row["voicemail_message_uuid"]), row["created_epoch"], row["caller_id_name"], row["caller_id_number"], message_status);
+								return listen_to_recording(message_number, string.lower(row["voicemail_message_uuid"]), row["created_epoch"], row["caller_id_name"], row["caller_id_number"], message_status);
 							end
 					end);
 				end
@@ -96,6 +96,7 @@
 					)
 				--send the message waiting event
 					mwi_notify(voicemail_id.."@"..domain_name, new_messages, saved_messages)
+					blf_notify(tonumber(new_messages) > 0, "voicemail+" .. voicemail_id .. "@" .. domain_name)
 					--fix for extensions that start with 0 (Ex: 0712)
 						if (voicemail_id_copy ~= voicemail_id  and voicemail_id_copy ~= nil) then
 							message_waiting(voicemail_id_copy, domain_uuid);
@@ -110,6 +111,6 @@
 		--send back to the main menu
 			if (session:ready()) then
 				timeouts = 0;
-				main_menu();
+				return main_menu();
 			end
 	end
