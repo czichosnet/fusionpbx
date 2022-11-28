@@ -24,11 +24,8 @@
 	Luis Daniel Lucio Quiroz <dlucio@okay.com.mx>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	include "root.php";
 	require_once "resources/require.php";
 	require_once "resources/functions/device_by.php";
 
@@ -123,11 +120,6 @@
 			if (substr($_SERVER['HTTP_USER_AGENT'],0,6) == "Aastra") {
 				preg_match("/MAC:([A-F0-9-]{17})/", $_SERVER['HTTP_USER_AGENT'], $matches);
 				$mac = $matches[1];
-				$mac = preg_replace("#[^a-fA-F0-9./]#", "", $mac);
-			}
-		//Flyingvoice: $_SERVER['HTTP_USER_AGENT'] = "Flyingvoice FIP13G V0.6.24 00:21:F2:22:AE:F1"
-			if (strtolower(substr($_SERVER['HTTP_USER_AGENT'],0,11)) == "flyingvoice") {
-				$mac = substr($_SERVER['HTTP_USER_AGENT'],-17);
 				$mac = preg_replace("#[^a-fA-F0-9./]#", "", $mac);
 			}
 	}
@@ -327,6 +319,8 @@
 			function http_digest_request($realm) {
 				header('HTTP/1.1 401 Authorization Required');
 				header('WWW-Authenticate: Digest realm="'.$realm.'", qop="auth", nonce="'.uniqid().'", opaque="'.md5($realm).'"');
+				header('Access-Control-Expose-Headers: WWW-Authenticate');
+				header('Access-Control-Allow-Origin: *');
 				header("Content-Type: text/html");
 				$content = 'Authorization Cancelled';
 				header("Content-Length: ".strval(strlen($content)));
@@ -347,6 +341,7 @@
 				if (!($data = http_digest_parse($_SERVER['PHP_AUTH_DIGEST'])) || ($data['username'] != $provision["http_auth_username"])) {
 					header('HTTP/1.1 401 Unauthorized');
 					header("Content-Type: text/html");
+				        header('Access-Control-Allow-Origin: *');
 					$content = 'Unauthorized '.$__line__;
 					header("Content-Length: ".strval(strlen($content)));
 					echo $content;
@@ -371,6 +366,7 @@
 			if (!$authorized) {
 				header('HTTP/1.0 401 Unauthorized');
 				header("Content-Type: text/html");
+				header('Access-Control-Allow-Origin: *');
 				$content = 'Unauthorized '.$__line__;
 				header("Content-Length: ".strval(strlen($content)));
 				echo $content;
@@ -384,6 +380,7 @@
 			header('WWW-Authenticate: Basic realm="'.$_SESSION['domain_name'].'"');
 			header('HTTP/1.0 401 Authorization Required');
 			header("Content-Type: text/html");
+			header('Access-Control-Allow-Origin: *');
 			$content = 'Authorization Required';
 			header("Content-Length: ".strval(strlen($content)));
 			echo $content;
@@ -405,6 +402,7 @@
 				syslog(LOG_WARNING, '['.$_SERVER['REMOTE_ADDR']."] provision attempt but failed http basic authentication for ".check_str($_REQUEST['mac']));
 				header('HTTP/1.0 401 Unauthorized');
 				header('WWW-Authenticate: Basic realm="'.$_SESSION['domain_name'].'"');
+				header('Access-Control-Allow-Origin: *');
 				unset($_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']);
 				$content = 'Unauthorized';
 				header("Content-Length: ".strval(strlen($content)));
@@ -435,6 +433,9 @@
 	$prov->file = $file;
 	$file_contents = $prov->render();
 
+
+	header('Access-Control-Allow-Origin: *');
+
 //deliver the customized config over HTTP/HTTPS
 	//need to make sure content-type is correct
 	if ($_REQUEST['content_type'] == 'application/octet-stream') {
@@ -460,7 +461,7 @@
 			header("Content-Type: text/plain");
 			header("Content-Length: ".strlen($file_contents));
 		}
-		else if ($device_vendor === "yealink" || $device_vendor === "flyingvoice") {
+		else if ($device_vendor === "yealink") {
 			header("Content-Type: text/plain");
 			header("Content-Length: ".strval(strlen($file_contents)));
 		}

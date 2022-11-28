@@ -809,12 +809,10 @@ if (!class_exists('modules')) {
 					$xml .= "	</modules>\n";
 					$xml .= "</configuration>";
 
-					if (file_exists($_SESSION['switch']['conf']['dir'].'/autoload_configs')) {
-						$fout = fopen($_SESSION['switch']['conf']['dir']."/autoload_configs/modules.conf.xml","w");
-						fwrite($fout, $xml);
-						unset($xml);
-						fclose($fout);
-					}
+					$fout = fopen($_SESSION['switch']['conf']['dir']."/autoload_configs/modules.conf.xml","w");
+					fwrite($fout, $xml);
+					unset($xml);
+					fclose($fout);
 
 				//apply settings
 					$_SESSION["reload_xml"] = true;

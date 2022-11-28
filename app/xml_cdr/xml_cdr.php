@@ -25,11 +25,8 @@
 	Luis Daniel Lucio Quiroz <dlucio@okay.com.mx>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
@@ -632,6 +629,17 @@
 		//loop through the results
 			$x = 0;
 			foreach ($result as $index => $row) {
+				//get the date and time
+					$tmp_year = date("Y", strtotime($row['start_stamp']));
+					$tmp_month = date("M", strtotime($row['start_stamp']));
+					$tmp_day = date("d", strtotime($row['start_stamp']));
+					$tmp_start_epoch_date = escape(date("j M Y", $row['start_epoch']));
+					if ($_SESSION['domain']['time_format']['text'] == '12h') {
+						$tmp_start_epoch_time = escape(date("g:i:s a", $row['start_epoch']));
+					}
+					else {
+						$tmp_start_epoch_time = escape(date("H:i:s", $row['start_epoch']));
+					}
 
 				//get the hangup cause
 					$hangup_cause = $row['hangup_cause'];
@@ -783,8 +791,8 @@
 					}
 				//start
 					if (permission_exists('xml_cdr_start')) {
-						$content .= "	<td class='middle right no-wrap'>".$row['start_date_formatted']."</td>\n";
-						$content .= "	<td class='middle right no-wrap hide-md-dn'>".$row['start_time_formatted']."</td>\n";
+						$content .= "	<td class='middle right no-wrap'>".$tmp_start_epoch_date."</td>\n";
+						$content .= "	<td class='middle right no-wrap hide-md-dn'>".$tmp_start_epoch_time."</td>\n";
 					}
 				//tta (time to answer)
 					if (permission_exists('xml_cdr_tta')) {

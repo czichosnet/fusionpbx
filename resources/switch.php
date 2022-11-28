@@ -26,11 +26,8 @@
 	Riccardo Granchi <riccardo.granchi@nems.it>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files";
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 
 //get the event socket information
@@ -967,9 +964,7 @@ if (!function_exists('save_sip_profile_xml')) {
 
 		// make profile dir if needed
 			$profile_dir = $_SESSION['switch']['conf']['dir']."/sip_profiles";
-			if (!is_readable($profile_dir)) {
-				mkdir($profile_dir, 0770, false);
-			}
+			if (!is_readable($profile_dir)) { event_socket_mkdir($profile_dir); }
 
 		//get the sip profiles from the database
 			$sql = "select * from v_sip_profiles";
@@ -1026,9 +1021,7 @@ if (!function_exists('save_sip_profile_xml')) {
 						}
 
 					//if the directory does not exist then create it
-						if (!is_readable($profile_dir.'/'.$sip_profile_name)) {
-							mkdir($profile_dir.'/'.$sip_profile_name, 0770, false);
-						}
+						if (!is_readable($profile_dir.'/'.$sip_profile_name)) { event_socket_mkdir($profile_dir.'/'.$sip_profile_name); }
 
 				}
 				unset($result, $row);

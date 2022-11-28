@@ -25,11 +25,8 @@
 	James Rose <james.o.rose@gmail.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -47,15 +44,12 @@
 	$text = $language->get();
 
 //get the http get or post and set it as php variables
-	if (is_numeric($_REQUEST["c"])) {
-		$conference_id = $_REQUEST["c"];
-	}
-	elseif (is_uuid($_REQUEST["c"])) {
-		$conference_id = $_REQUEST["c"];
+	if (is_uuid($_REQUEST["c"])) {
+		$conference_uuid = $_REQUEST["c"];
 	}
 
 //replace the space with underscore
-	$conference_name = $conference_id.'@'.$_SESSION['domain_name'];
+	$conference_name = $conference_uuid.'@'.$_SESSION['domain_name'];
 
 //create the conference list command
 	$switch_cmd = "conference '".$conference_name."' xml_list";

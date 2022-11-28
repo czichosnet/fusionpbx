@@ -30,11 +30,8 @@
 	James Rose <james.o.rose@gmail.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	include "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -72,7 +69,7 @@
 			$context = $_SESSION['domain_name'];
 
 		//clean up variable values
-			$src = str_replace(array('(',')',' '), '', $src);
+			$src = str_replace(array('.','(',')','-',' '), '', $src);
 			$dest = (strpbrk($dest, '@') != FALSE) ? str_replace(array('(',')',' '), '', $dest) : str_replace(array('.','(',')','-',' '), '', $dest); //don't strip periods or dashes in sip-uri calls, only phone numbers
 
 		//adjust variable values
@@ -135,7 +132,7 @@
 			}
 
 		//determine call direction
-			$dir = (user_exists($dest)) ? 'local' : 'outbound';
+			$dir = (strlen($dest) < 7) ? 'local' : 'outbound';
 
 		//define a leg - set source to display the defined caller id name and number
 			$source_common = "{";
@@ -151,7 +148,7 @@
 				$source_common .= ",record_name='".$record_name."'";
 			}
 
-			if (user_exists($src)) {
+			if (strlen($src) < 7) {
 				//source is a local extension
 				$source = $source_common.$sip_auto_answer.
 					",domain_uuid=".$domain_uuid.
@@ -166,7 +163,7 @@
 
 		//define b leg - set destination to display the defined caller id name and number
 			$destination_common = " &bridge({origination_caller_id_name='".$dest_cid_name."',origination_caller_id_number=".$dest_cid_number;
-			if (user_exists($dest)) {
+			if (strlen($dest) < 7) {
 				//destination is a local extension
 				if (strpbrk($dest, '@') != FALSE) { //sip-uri
 					$switch_cmd = $destination_common.",call_direction=outbound}sofia/external/".$dest.")";
@@ -177,7 +174,7 @@
 			}
 			else {
 				//local extension (source) > external number (destination)
-				if (user_exists($src) && strlen($dest_cid_number) == 0) {
+				if (strlen($src) < 7 && strlen($dest_cid_number) == 0) {
 					//retrieve outbound caller id from the (source) extension
 					$sql = "select outbound_caller_id_name, outbound_caller_id_number from v_extensions where domain_uuid = :domain_uuid and extension = :src ";
 					$parameters['domain_uuid'] = $_SESSION['domain_uuid'];

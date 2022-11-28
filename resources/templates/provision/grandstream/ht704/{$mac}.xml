@@ -629,7 +629,7 @@
 <!-- Hunting Group Ring Timeout. (5-300, default is 20 seconds) -->
 <!-- Number: 5 to 300 -->
 <!-- Mandatory -->
-<P4330>300</P4330>
+<P4330>20</P4330>
 
 <!-- Hunting Group Type. 0 - Circular, 1 - Linear -->
 <!-- Number: 0, 1 -->
@@ -1290,7 +1290,7 @@
 <!-- Hunting Group Ring Timeout. (5-300, default is 20 seconds) -->
 <!-- Number: 5 to 300 -->
 <!-- Mandatory -->
-<P4331>300</P4331>
+<P4331>20</P4331>
 
 <!-- Hunting Group Type. 0 - Circular, 1 - Linear -->
 <!-- Number: 0, 1 -->
@@ -1997,7 +1997,7 @@
 <!-- Allow DHCP server to set Time Zone. 0 - No, 1 - Yes -->
 <!-- Number: 0, 1 -->
 <!-- Mandatory -->
-{if isset($grandstream_dhcp_time_zone)}<P143>{$grandstream_dhcp_time_zone}</P143>{else}<P143>0</P143>{/if}
+<P143>0</P143>
 
 <!-- Language. 0 - English, 4 - Chinese, 10 - Spanish IVR -->
 <!-- Number: 0, 4, 10 -->

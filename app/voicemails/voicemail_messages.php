@@ -24,11 +24,8 @@
  Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/paging.php";
 
@@ -291,11 +288,13 @@
 				foreach ($field['messages'] as $row) {
 					//responsive date
 					$array = explode(' ', $row['created_date']);
+					$time = strtotime($row['created_date']);
+					$newFormat = date("d.m.Y H:i",$time);
 					if ($array[0].' '.$array[1].' '.$array[2] == date('j M Y')) { //today
-						$created_date = escape($array[3].' '.$array[4]); //only show time
+						$created_date = escape($newFormat) ;// escape($array[3].' '.$array[4]); //only show time
 					}
 					else {
-						$created_date = escape($array[0].' '.$array[1].' '.$array[2])." <span class='hide-xs' title=\"".escape($array[3].' '.$array[4])."\">".escape($array[3].' '.$array[4])."</span>";
+						$created_date = escape($newFormat) ;//$created_date = escape($array[0].' '.$array[1].' '.$array[2])." <span class='hide-xs' title=\"".escape($array[3].' '.$array[4])."\">".escape($array[3].' '.$array[4])."</span>";
 					}
 
 					//playback progress bar

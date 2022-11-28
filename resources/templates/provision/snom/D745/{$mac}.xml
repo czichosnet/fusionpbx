@@ -17,7 +17,6 @@
     <global_missed_counter perm="">on</global_missed_counter>
     <dialnumber_us_format perm="">on</dialnumber_us_format>
     <show_ivr_digits perm="">off</show_ivr_digits>
-    <cw_dialtone perm="">{if isset($snom_dialtone_on_hold)}{$snom_dialtone_on_hold}{else}true{/if}</cw_dialtone>
     <!-- Ringtones -->
     <alert_internal_ring_text perm="">alert-internal</alert_internal_ring_text>
     <alert_internal_ring_sound perm="">{if isset($snom_alert_internal)}{$snom_alert_internal}{else}Ringer1{/if}</alert_internal_ring_sound>
@@ -33,11 +32,8 @@
     <quick_transfer perm="">blind</quick_transfer>
     <call_screen_fkeys_on_connected perm="">F_HOLD F_TRANSFER F_CONFERENCE</call_screen_fkeys_on_connected>
     <!-- Updates -->
-    <update_policy perm="">{if isset($snom_update_policy)}{$snom_update_policy}{else}auto_update{/if}</update_policy>
-    <setting_server perm="RW">{if isset($snom_provision_url)}{$snom_provision_url}{else}https://{$domain_name}{$project_path}/app/provision/index.php?mac={$mac}{/if}</setting_server>
-    <settings_refresh_timer perm="RW">{if isset($snom_provision_timer_seconds)}{$snom_provision_timer_seconds}{else}0{/if}</settings_refresh_timer>
-    <http_client_user perm="">{$http_auth_username}</http_client_user>
-    <http_client_pass perm="">{$http_auth_password}</http_client_pass>
+    <update_policy perm="">auto_update</update_policy>
+    <setting_server perm="RW">https://{if isset($http_auth_enabled) && $http_auth_enabled == true}{$http_auth_username}:{$http_auth_password}@{/if}{$domain_name}{$project_path}/app/provision/index.php?mac={$mac}</setting_server>
     <!-- Admin Access -->
     {if isset($admin_password) }
     <http_user perm="R">{$admin_name}</http_user>
@@ -62,7 +58,7 @@
     <user_expiry idx="{$row.line_number}" perm="R">{$row.register_expires}</user_expiry>
     <user_server_type idx="{$row.line_number}" perm="R">Default</user_server_type>
     <user_srtp idx="{$row.line_number}" perm="R">off</user_srtp>
-    <user_mailbox idx="{$row.line_number}" perm="R">{$voicemail_number}</user_mailbox>
+    <user_mailbox idx="{$row.line_number}" perm="R">{if isset($voicemail_number)}{$voicemail_number}{else}*97{/if}</user_mailbox>
 	{if isset($account.{$row.line_number}.shared_line) }
 	<user_shared_line idx="{$row.line_number}" perm="RW">{$account.{$row.line_number}.shared_line}</user_shared_line>
 	{else}

@@ -18,68 +18,6 @@
 --	Portions created by the Initial Developer are Copyright (C) 2014-2020
 --	the Initial Developer. All Rights Reserved.
 
-local function normNumber(destination_number)
-
-	local numberToNorm = destination_number;
-	local countrycode = session:getVariable("countrycode");
-	local areacode = session:getVariable("areacode");
-
-	freeswitch.consoleLog("notice", "countrycode:" ..countrycode);
-	freeswitch.consoleLog("notice", "areacode:" ..areacode);
-
-	-- optional
-	local prefix = "";
-
-	local normedNumber = "";
-	local start = 0;
-
-	numberToNorm = string.gsub(numberToNorm,"*","",1);
-
-	local numberLength = string.len(numberToNorm);
-
-	if (string.find(numberToNorm,"+") == 1) then
-		
-		normedNumber = prefix .. string.sub(numberToNorm,2);
-	elseif (numberToNorm == "115") then
-		normedNumber =  countrycode .. numberToNorm
-
-	elseif (string.find(numberToNorm,"00800") == 1) then
-
-		normedNumber =  numberToNorm
-	elseif (string.find(numberToNorm,"0800") == 1) then
-
-		normedNumber =  countrycode .. string.sub(numberToNorm,2);
-
-	elseif (string.find(numberToNorm,"49") == 1) then
-		normedNumber =  prefix .. numberToNorm
-
-	elseif (string.find(numberToNorm,"00"..countrycode) == 1) then
-		
-		normedNumber = prefix .. string.sub(numberToNorm,3);
-	elseif (string.find(numberToNorm,"00") == 1) then
-		
-		normedNumber = prefix .. string.sub(numberToNorm,2);
-	elseif (string.find(numberToNorm,countrycode..areacode) == 1) then
-		
-		normedNumber = prefix .. numberToNorm;
-	else
-		start = string.find(numberToNorm,"[123456789]");
-		
-		if start == 1 then
-			normedNumber = prefix .. countrycode .. areacode .. numberToNorm;
-			
-		elseif start == 2 then
-			
-			normedNumber = prefix .. countrycode .. string.sub(numberToNorm,2);
-		elseif start == 3 then
-			
-			normedNumber = prefix .. string.sub(numberToNorm,3);
-		end	
-	end
-
-	return normedNumber
-end
-
 
 --set defaults
 	expire = {}
@@ -87,12 +25,9 @@ end
 
 --get the variables
 	domain_name = session:getVariable("domain_name");
-	destination_number = normNumber(session:getVariable("destination_number"));
+	destination_number = session:getVariable("destination_number");
 	outbound_caller_id_name = session:getVariable("outbound_caller_id_name");
 	outbound_caller_id_number = session:getVariable("outbound_caller_id_number");
-
-	default_language = session:getVariable("default_language");
-
 
 --includes
 	local cache = require"resources.functions.cache"

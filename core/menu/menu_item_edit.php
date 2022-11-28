@@ -17,18 +17,15 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2022
+	Portions created by the Initial Developer are Copyright (C) 2008-2019
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files;
+//includes
+	include "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -89,9 +86,6 @@
 		$menu_item_parent_uuid = $_POST["menu_item_parent_uuid"];
 		$menu_item_order = $_POST["menu_item_order"];
 	}
-
-//sanitize the menu link
-	$menu_item_link = preg_replace('#[^a-zA-Z0-9_\-\.\&\=\?\/]#', '', $menu_item_link);
 
 //when a HTTP POST is available then process it
 	if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {

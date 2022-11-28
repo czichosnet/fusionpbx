@@ -24,11 +24,8 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -277,11 +274,6 @@
 									//remove formatting from the phone number
 									if ($field_name == "phone_number") {
 										$result[$key] = preg_replace('{\D}', '', $result[$key]);
-									}
-
-									//set the voicemail_local_after_email, voicemail_tutorial, and voicemail_enabled to lower case
-									if ($field_name == 'voicemail_local_after_email' || $field_name == 'voicemail_tutorial' || $field_name == 'voicemail_enabled') {
-										$result[$key] = strtolower($result[$key]);
 									}
 
 									//build the data array

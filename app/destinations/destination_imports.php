@@ -17,18 +17,15 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2018-2022
+	Portions created by the Initial Developer are Copyright (C) 2018-2020
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -79,7 +76,6 @@
 		$file = $_SESSION['server']['temp']['dir']."/destinations-".$_SESSION['domain_name'].".csv";
 		file_put_contents($file, $_POST['data']);
 		$_SESSION['file'] = $file;
-		$_SESSION['file_name'] = $_FILES['ulfile']['name'];
 	}
 
 //copy the csv file
@@ -220,11 +216,6 @@
 							//add the actions
 								foreach ($array['destinations'] as $row) {
 
-									//build the array
-										$actions[0]['destination_app'] = $row['destination_app'];
-										$actions[0]['destination_data'] =  $row['destination_data'];
-										$destination_actions = json_encode($actions);
-
 									//get the values
 										$destination_number = $row['destination_number'];
 										$destination_app = $row['destination_app'];
@@ -244,7 +235,6 @@
 
 									//add the additional fields
 										$dialplan_uuid = uuid();
-										$array["destinations"][$row_id]['destination_actions'] = $destination_actions;
 										$array["destinations"][$row_id]['destination_type'] = $destination_type;
 										$array["destinations"][$row_id]['destination_record'] = $destination_record;
 										$array["destinations"][$row_id]['destination_context'] = $destination_context;
@@ -414,7 +404,7 @@
 													$dialplan_detail_order = $dialplan_detail_order + 10;
 												}
 
-											//set the destination app and data
+											//set the call accountcode
 												if (strlen($destination_app) > 0 && strlen($destination_data) > 0) {
 													$array["dialplans"][$row_id]["dialplan_details"][$y]["domain_uuid"] = $domain_uuid;
 													$array["dialplans"][$row_id]["dialplan_details"][$y]["dialplan_detail_tag"] = "action";
@@ -422,11 +412,6 @@
 													$array["dialplans"][$row_id]["dialplan_details"][$y]["dialplan_detail_data"] = $destination_data;
 													$array["dialplans"][$row_id]["dialplan_details"][$y]["dialplan_detail_order"] = $dialplan_detail_order;
 													$y++;
-
-													//set inline to true
-													if ($action_app == 'set' || $action_app == 'export') {
-														$dialplan["dialplan_details"][$y]["dialplan_detail_inline"] = 'true';
-													}
 
 													//increment the dialplan detail order
 													$dialplan_detail_order = $dialplan_detail_order + 10;
@@ -693,25 +678,13 @@
 
 			echo "<table width='100%' border='0' cellpadding='0' cellspacing='0'>\n";
 
-			if (isset($_SESSION['file_name']) && strlen($_SESSION['file_name']) > 0) {
-				echo "<tr>\n";
-				echo "<td class='vncell' valign='top' align='left' nowrap='nowrap'>\n";
-				echo "		".$text['label-file_name']."\n";
-				echo "</td>\n";
-				echo "<td class='vtable' align='left'>\n";
-				echo "		<b>".$_SESSION['file_name']."</b>\n";
-				echo "<br />\n";
-				//echo $text['description-file_name']."\n";
-				echo "</td>\n";
-				echo "</tr>\n";
-			}
-
 			//loop through user columns
 			$x = 0;
 			foreach ($line_fields as $line_field) {
 				$line_field = trim(trim($line_field), $enclosure);
 				echo "<tr>\n";
 				echo "	<td class='vncell' valign='top' align='left' nowrap='nowrap'>\n";
+				//echo "    ".$text['label-zzz']."\n";
 				echo $line_field;
 				echo "	</td>\n";
 				echo "	<td class='vtable' align='left'>\n";
@@ -758,7 +731,7 @@
 			echo $text['description-destination_type']."\n";
 			echo "</td>\n";
 			echo "</tr>\n";
-
+			
 			echo "<tr>\n";
 			echo "<td class='vncell' valign='top' align='left' nowrap='nowrap'>\n";
 			echo "	".$text['label-destination_record']."\n";
@@ -943,7 +916,6 @@
 	echo "    <select class='formfld' style='width:40px;' name='data_delimiter'>\n";
 	echo "    <option value=','>,</option>\n";
 	echo "    <option value='|'>|</option>\n";
-	echo "    <option value='	'>TAB</option>\n";
 	echo "    </select>\n";
 	echo "<br />\n";
 	echo $text['description-import_delimiter']."\n";

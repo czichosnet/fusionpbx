@@ -130,17 +130,20 @@
 
 		--get the domain_uuid
 			domain_uuid = session:getVariable("domain_uuid");
-			if (domain_uuid == nil) then
-				if (domain_name ~= nil) then
-					local sql = "SELECT domain_uuid FROM v_domains ";
-					sql = sql .. "WHERE domain_name = :domain_name ";
-					local params = {domain_name = domain_name};
-					if (debug["sql"]) then
-						freeswitch.consoleLog("notice", "[voicemail] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
-					end
-					dbh:query(sql, params, function(rows)
-						domain_uuid = rows["domain_uuid"];
-					end);
+			if (domain_count > 1) then
+				if (domain_uuid == nil) then
+					--get the domain_uuid using the domain name required for multi-tenant
+						if (domain_name ~= nil) then
+							local sql = "SELECT domain_uuid FROM v_domains ";
+							sql = sql .. "WHERE domain_name = :domain_name ";
+							local params = {domain_name = domain_name};
+							if (debug["sql"]) then
+								freeswitch.consoleLog("notice", "[voicemail] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
+							end
+							dbh:query(sql, params, function(rows)
+								domain_uuid = rows["domain_uuid"];
+							end);
+						end
 				end
 			end
 			if (domain_uuid ~= nil) then
@@ -327,7 +330,6 @@
 	require "app.voicemail.resources.functions.record_name";
 	require "app.voicemail.resources.functions.message_count"
 	require "app.voicemail.resources.functions.mwi_notify";
-	require "app.voicemail.resources.functions.blf_notify";
 	require "app.voicemail.resources.functions.tutorial";
 
 --send a message waiting event
@@ -383,11 +385,11 @@
 				if (voicemail_id) then
 					if (voicemail_authorized) then
 						if (voicemail_authorized == "true") then
-							--if (voicemail_id == user_name or voicemail_id == sip_number_alias) then
+							if (voicemail_id == user_name or voicemail_id == sip_number_alias) then
 								--skip the password check
-							--else
-							--	check_password(voicemail_id, password_tries);
-							--end
+							else
+								check_password(voicemail_id, password_tries);
+							end
 						else
 							check_password(voicemail_id, password_tries);
 						end

@@ -38,9 +38,10 @@
 	require "resources.functions.file_exists";
 	require "resources.functions.mkdir";
 
---initialize the objects
 	local Database = require "resources.functions.database";
+
 	local log = require "resources.functions.log".call_flow_monitor
+
 	local presence_in = require "resources.functions.presence_in"
 
 --make sure the scripts/run dir exists
@@ -48,6 +49,16 @@
 
 --define the run file
 	run_file = scripts_dir .. "/run/call_flow_monitor.tmp";
+
+--define the functions
+	--shell return results
+	function shell(c)
+		local o, h
+		h = assert(io.popen(c,"r"))
+		o = h:read("*all")
+		h:close()
+		return o
+	end
 
 --used to stop the lua service
 	local file = assert(io.open(run_file, "w"));
@@ -85,7 +96,7 @@
 
 					-- turn the lamp
 						presence_in.turn_lamp( call_flow_status == "false",
-							'flow+'..call_flow_feature_code.."@"..domain_name,
+							call_flow_feature_code.."@"..domain_name,
 							call_flow_uuid
 						);
 

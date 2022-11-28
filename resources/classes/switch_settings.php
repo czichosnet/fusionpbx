@@ -156,7 +156,7 @@ if (!class_exists('switch_settings')) {
 				$array[$x]['default_setting_description'] = '';
 				$x++;
 				$array[$x]['default_setting_category'] = 'switch';
-				$array[$x]['default_setting_subcategory'] = 'languages';
+				$array[$x]['default_setting_subcategory'] = 'phrases';
 				$array[$x]['default_setting_name'] = 'dir';
 				$array[$x]['default_setting_value'] = $vars['conf_dir'].'/languages';
 				$array[$x]['default_setting_enabled'] = 'true';
@@ -239,8 +239,7 @@ if (!class_exists('switch_settings')) {
 							$array['default_settings'][$i]['default_setting_value'] = $row['default_setting_value'];
 							$array['default_settings'][$i]['default_setting_enabled'] = $row['default_setting_enabled'];
 							$array['default_settings'][$i]['default_setting_description'] = $row['default_setting_description'];
-						//increment the row id
-							$i++;
+						$i++;
 					}
 					if (is_array($array) && @sizeof($array) != 0) {
 						//grant temporary permissions
@@ -251,6 +250,7 @@ if (!class_exists('switch_settings')) {
 							$database->app_name = 'switch_settings';
 							$database->app_uuid = '84e91084-a227-43cd-ae99-a0f8ed61eb8b';
 							$database->save($array);
+							unset($array);
 						//revoke temporary permissions
 							$p->delete('default_setting_add', 'temp');
 					}
@@ -258,12 +258,10 @@ if (!class_exists('switch_settings')) {
 				}
 
 			//set the default settings
-				if (is_array($array)) {
-					foreach ($array as $row) {
-						if (!isset($_SESSION['switch'][$row['default_setting_subcategory']])) {
-							if ($row['default_setting_enabled'] != "false") {
-								$_SESSION['switch'][$row['default_setting_subcategory']] = $row['default_setting_value'];
-							}
+				foreach ($array as $row) {
+					if (!isset($_SESSION['switch'][$row['default_setting_subcategory']])) {
+						if ($row['default_setting_enabled'] != "false") {
+							$_SESSION['switch'][$row['default_setting_subcategory']] = $row['default_setting_value'];
 						}
 					}
 				}

@@ -26,9 +26,7 @@
 
 //if the recordings directory doesn't exist then create it
 	if (is_array($_SESSION['switch']['recordings']) && strlen($_SESSION['switch']['recordings']['dir']."/".$domain_name) > 0) {
-		if (!is_readable($_SESSION['switch']['recordings']['dir']."/".$domain_name)) {
-			mkdir($_SESSION['switch']['recordings']['dir']."/".$domain_name, 0770, true);
-		}
+		if (!is_readable($_SESSION['switch']['recordings']['dir']."/".$domain_name)) { event_socket_mkdir($_SESSION['switch']['recordings']['dir']."/".$domain_name,02770,true); }
 	}
 
 //process one time
@@ -64,7 +62,7 @@
 										$database = new database;
 										$database->app_name = 'recordings';
 										$database->app_uuid = '83913217-c7a2-9e90-925d-a866eb40b60e';
-										$database->save($array, false);
+										$database->save($array);
 										unset($array);
 									//revoke temporary permissions
 										$p->delete('recording_edit', 'temp');
@@ -109,7 +107,7 @@
 								$database = new database;
 								$database->app_name = 'recordings';
 								$database->app_uuid = '83913217-c7a2-9e90-925d-a866eb40b60e';
-								$database->save($array, false);
+								$database->save($array);
 								unset($array);
 							//revoke temporary permissions
 								$p->delete('recording_edit', 'temp');

@@ -6,10 +6,9 @@ local basename         = require "resources.functions.basename"
 local is_absolute_path = require "resources.functions.is_absolute_path"
 
 function find_file(dbh, domain_name, domain_uuid, file_name)
-
 	-- if we specify e.g. full path
 	if (is_absolute_path(file_name) and file.exists(file_name)) then
-		log.debugf('[find_file.lua] found file `%s` in file system', file_name)
+		log.debugf('found file `%s` in file system', file_name)
 		return file_name
 	end
 
@@ -19,26 +18,14 @@ function find_file(dbh, domain_name, domain_uuid, file_name)
 	if file_name_only == file_name then -- this can be recordings
 		local full_path = recordings_dir .. "/" .. domain_name .. "/" .. file_name
 		if file.exists(full_path) then
+			log.debugf('resolve `%s` as recording `%s`', file_name, full_path)
 			file_name, found = full_path, true
-		else 
-			--send debug info to the log
-			log.debugf('[find_file.lua] `%s` as recording `%s`', file_name, full_path)
-
-			-- recordings may be in database
+		else -- recordings may be in database
 			local settings = Settings.new(dbh, domain_name, domain_uuid)
 			local storage_type = settings:get('recordings', 'storage_type', 'text') or ''
 			if storage_type == 'base64' then
-				--create the database object
-				local Database         = require "resources.functions.database"
-				
-				-- json need to add when enabling debug sql
-				local json
-				if (debug["sql"]) then
-				    json = require "resources.functions.lunajson"
-				end
-
 				local sql = "SELECT recording_base64 FROM v_recordings "
-					.. "WHERE domain_uuid = :domain_uuid "
+					.. "WHERE domain_uuid = :domain_uuid"
 					.. "AND recording_filename = :file_name "
 				local params = {domain_uuid = domain_uuid, file_name = file_name};
 				if (debug["sql"]) then
@@ -50,7 +37,7 @@ function find_file(dbh, domain_name, domain_uuid, file_name)
 				dbh:release();
 
 				if recording_base64 and #recording_base64 > 32 then
-					log.debugf('[find_file.lua] `%s` as recording `%s`(base64)', file_name, full_path)
+					log.debugf('resolve `%s` as recording `%s`(base64)', file_name, full_path)
 					file_name, found, is_base64 = full_path, true, true
 					file.write_base64(file_name, recording_base64)
 				end
@@ -78,7 +65,7 @@ function find_file(dbh, domain_name, domain_uuid, file_name)
 		if sounds_dir then
 			found = file.exists(sounds_dir.. "/" ..file_name_only)
 			if found then
-				log.debugf('[find_file.lua] `%s` as sound `%s`', file_name, found)
+				log.debugf('resolve `%s` as sound `%s`', file_name, found)
 				file_name, found = found, true
 			end
 		end

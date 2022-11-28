@@ -24,11 +24,8 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	include "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -185,7 +182,7 @@
 
 						if ($num_rows == 0 && !file_exists($v_greeting_dir.'/'.$file_name)) {
 							//move the uploaded greeting
-								mkdir($v_greeting_dir, 0770, false);
+								event_socket_mkdir($v_greeting_dir);
 								if ($file_ext == '.wav' || $file_ext == '.mp3') {
 									move_uploaded_file($_FILES['file']['tmp_name'], $v_greeting_dir.'/'.$file_name);
 								}

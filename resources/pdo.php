@@ -25,11 +25,8 @@
  Raymond Chandler <intralanman@gmail.com>
  */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	include "root.php";
 	require_once "resources/functions.php";
 
 //set defaults
@@ -271,17 +268,6 @@ if ($db_type == "pgsql") {
 	}
 } //end if db_type pgsql
 
-if ($db_type == "odbc") {
-	//database connection
-	try {
-		$db = new PDO("odbc:".$db_name);
-	}
-	catch (PDOException $error) {
-		print "error: " . $error->getMessage() . "<br/>";
-		die();
-	}
-} //end if db_type pgsql
-
 //get the domain list
 	if (!is_array($_SESSION['domains']) or !isset($_SESSION["domain_uuid"])) {
 
@@ -348,8 +334,10 @@ if ($db_type == "odbc") {
 	}
 
 //set the setting arrays
-	if (!isset($_SESSION['domain']['menu'])) {
+	if (!isset($_SESSION['domain']['menu'])){
+		require "resources/classes/domains.php";
 		$domain = new domains();
+		$domain->db = $db;
 		$domain->set();
 	}
 
@@ -359,6 +347,37 @@ if ($db_type == "odbc") {
 	}
 	else {
 		$domain_uuid = uuid();
+	}
+
+//check the domain cidr range 
+	if (isset($_SESSION['domain']["cidr"]) && !defined('STDIN')) {
+		$found = false;
+		foreach($_SESSION['domain']["cidr"] as $cidr) {
+			if (check_cidr($cidr, $_SERVER['REMOTE_ADDR'])) {
+				$found = true;
+				break;
+			}
+		}
+		if (!$found) {
+			echo "access denied";
+			exit;
+		}
+	}
+
+//check the api cidr range
+	if (isset($_SESSION['api']["cidr"])) {
+		$found = false;
+		foreach($_SESSION['api']["cidr"] as $cidr) {
+			if (check_cidr($cidr, $_SERVER['REMOTE_ADDR'])) {
+				$found = true;
+				break;
+			}
+		}
+		if (!$found) {
+			unset ($_REQUEST['key']);
+			unset ($_POST['key']);
+			unset ($_GET['key']);
+		}
 	}
 
 ?>

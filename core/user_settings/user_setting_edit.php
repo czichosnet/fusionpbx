@@ -24,11 +24,8 @@
  Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -652,12 +649,6 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 		echo "    	<option value='fixed' ".($user_setting_value == "fixed" ? "selected='selected'" : null).">".$text['option-fixed']."</option>\n";
 		echo "    </select>\n";
 	}
-	elseif ($user_setting_category == "theme" && $user_setting_subcategory == "menu_side_item_main_sub_close" && $user_setting_name == "text" ) {
-		echo "    <select class='formfld' id='user_setting_value' name='user_setting_value'>\n";
-		echo "    	<option value='automatic'>".$text['option-automatic']."</option>\n";
-		echo "    	<option value='manual' ".($user_setting_value == "manual" ? "selected='selected'" : null).">".$text['option-manual']."</option>\n";
-		echo "    </select>\n";
-	}
 	else if ($user_setting_category == "theme" && $user_setting_subcategory == "body_header_brand_type" && $user_setting_name == "text" ) {
 		echo "    <select class='formfld' id='user_setting_value' name='user_setting_value'>\n";
 		echo "    	<option value='image' ".(($user_setting_value == "image") ? "selected='selected'" : null).">".$text['label-image']."</option>\n";
@@ -769,7 +760,7 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 	echo "	".$text['label-description']."\n";
 	echo "</td>\n";
 	echo "<td class='vtable' align='left'>\n";
-	echo "	<textarea class='formfld' style='width: 185px; height: 80px;' name='user_setting_description'>".escape($user_setting_description)."</textarea>\n";
+	echo "	<input class='formfld' type='text' name='user_setting_description' style='width: 80%; max-width: 600px; min-width: 167px;' maxlength='255' value=\"".escape($user_setting_description)."\">\n";
 	echo "<br />\n";
 	echo $text['description-description']."\n";
 	echo "</td>\n";

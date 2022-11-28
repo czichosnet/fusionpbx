@@ -23,6 +23,7 @@
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
+include "root.php";
 
 //define the device class
 	class device {
@@ -119,9 +120,6 @@
 				case "64167f":
 					$device_vendor = "polycom";
 					break;
-				case "482567":
-					$device_vendor = "polycom";
-					break;
 				case "000413":
 					$device_vendor = "snom";
 					break;
@@ -158,9 +156,6 @@
 				case "0080f0":
 					$device_vendor = "panasonic";
 					break;
-				case "0021f2":
-					$device_vendor = "flyingvoice";
-					break;					
 				default:
 					$device_vendor = "";
 				}
@@ -219,9 +214,6 @@
 					}
 					if (preg_replace('/^.*?(fanvil).*$/i', '$1', $agent) == "fanvil") {
 						return "fanvil";
-					}
-					if (preg_replace('/^.*?(flyingvoice).*$/i', '$1', $agent) == "flyingvoice") {
-						return "flyingvoice";
 					}
 					// unknown vendor
 					return "";

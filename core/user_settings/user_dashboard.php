@@ -24,12 +24,22 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
+//include the root directory
+	include "root.php";
 
-//includes files
-	require_once "resources/require.php";
+//if config.php file does not exist then redirect to the install page
+	if (file_exists($_SERVER["PROJECT_ROOT"]."/resources/config.php")) {
+		//do nothing
+	} elseif (file_exists($_SERVER["PROJECT_ROOT"]."/resources/config.php")) {
+		//original directory
+	} elseif (file_exists("/etc/fusionpbx/config.php")){
+		//linux
+	} elseif (file_exists("/usr/local/etc/fusionpbx/config.php")){
+		//bsd
+	} else {
+		header("Location: ".PROJECT_PATH."/core/install/install.php");
+		exit;
+	}
 
 //additional includes
 	require_once "resources/check_auth.php";

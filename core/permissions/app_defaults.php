@@ -3,9 +3,9 @@
 if ($domains_processed == 1) {
 
 	//add the permissions
-		$sql = "select * from v_permissions \n";
+		$sql = "delete from v_permissions";
 		$database = new database;
-		$database_permissions = $database->select($sql, null, 'all');
+		$database->execute($sql, null);
 
 	//get the $apps array from the installed apps from the core and mod directories
 		$config_list = glob($_SERVER["DOCUMENT_ROOT"].PROJECT_PATH."/*/*/app_config.php");
@@ -17,28 +17,14 @@ if ($domains_processed == 1) {
 
 	//restore default permissions
 		$x = 0;
-		foreach ($apps as $app) {
-			if (is_array($app['permissions']) && @sizeof($app['permissions']) != 0) {
-				foreach ($app['permissions'] as $app_permission) {
-					//check if the permission is in the database
-					$permission_found = false;
-					if (is_array($database_permissions) && @sizeof($database_permissions) != 0) {
-						foreach($database_permissions as $row) {
-							if ($row['permission_name'] == $app_permission['name']) {
-								$permission_found = true;
-							}
-						}
-					}
-
-					//add the permission to the array
-					if (!$permission_found) {
-						$array['permissions'][$x]['permission_uuid'] = uuid();
-						$array['permissions'][$x]['permission_name'] = $app_permission['name'];
-						$array['permissions'][$x]['application_name'] = $app['name'];
-						$array['permissions'][$x]['application_uuid'] = $app['uuid'];
-						$array['permissions'][$x]['insert_date'] = 'now()';
-						$x++;
-					}
+		foreach ($apps as $row) {
+			if (is_array($row['permissions']) && @sizeof($row['permissions']) != 0) {
+				foreach ($row['permissions'] as $permission) {
+					$array['permissions'][$x]['permission_uuid'] = uuid();
+					$array['permissions'][$x]['permission_name'] = $permission['name'];
+					$array['permissions'][$x]['application_name'] = $row['name'];
+					$array['permissions'][$x]['application_uuid'] = $row['uuid'];
+					$x++;
 				}
 			}
 		}
@@ -53,7 +39,7 @@ if ($domains_processed == 1) {
 				$database = new database;
 				$database->app_name = 'permissions';
 				$database->app_uuid = 'ce1498a0-46e2-487d-85de-4eec7122a984';
-				$database->save($array, false);
+				$database->save($array);
 				unset($array);
 
 			//revoke temporary permissions

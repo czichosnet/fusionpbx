@@ -24,6 +24,7 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 	KonradSC <konrd@yahoo.com>
 */
+include "root.php";
 
 //define the blf_notify class
 	class call_center_notify {

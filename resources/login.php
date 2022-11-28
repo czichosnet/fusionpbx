@@ -24,13 +24,6 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
-	require_once "resources/require.php";
-
 //add multi-lingual support
 	$language = new text;
 	$text = $language->get(null,'core/user_settings');
@@ -159,7 +152,7 @@
 								$email_body = str_replace('${domain}', $domain_name, $email_body);
 
 							//send reset link
-								if (send_email($email, $email_subject, $email_body, $eml_error)) {
+								if (send_email($email, $email_subject, $email_body)) {
 									//email sent
 										message::add($text['message-reset_link_sent'], 'positive', 2500);
 								}
@@ -249,20 +242,9 @@
 //set variable if not set
 	if (!isset($_SESSION['login']['domain_name_visible']['boolean'])) { $_SESSION['login']['domain_name_visible']['boolean'] = null; }
 
-//santize the login destination url and set a default value
-	if (isset($_SESSION['login']['destination']['url'])) {
-		$destination_path = parse_url($_SESSION['login']['destination']['url'])['path'];
-		$destination_query = parse_url($_SESSION['login']['destination']['url'])['query'];
-		$destination_path = preg_replace('#[^a-zA-Z0-9_\-\./]#', '', $destination_path);
-		$destination_query = preg_replace('#[^a-zA-Z0-9_\-\./&=]#', '', $destination_query);
-		$_SESSION['login']['destination']['url'] = (strlen($destination_query) > 0) ? $destination_path.'?'.$destination_query : $destination_path;
-	}
-	else {
-		$_SESSION['login']['destination']['url'] = PROJECT_PATH."/core/dashboard/";
-	}
-
-	if (strlen($_REQUEST['path']) > 0) {
-		$_SESSION['redirect_path'] = $_REQUEST['path'];
+//set a default login destination
+	if (strlen($_SESSION['login']['destination']['url']) == 0) {
+		$_SESSION['login']['destination']['url'] = PROJECT_PATH."/core/user_settings/user_dashboard.php";
 	}
 
 //add the header
